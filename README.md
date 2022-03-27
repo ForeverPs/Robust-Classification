@@ -35,7 +35,7 @@ Robust classification in the presence of polluted images
 - run `train.py`
 
 ## Validation
-- Done. 1k images in testing set are labeled for validation
+- 1k images in testing set are labeled for validation
 
 ## Boost Scheme
 - Somehow forbidden to use.
