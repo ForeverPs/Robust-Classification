@@ -34,7 +34,7 @@ Robust classification in the presence of polluted images
 - To do
 
 ## Validation
-- Need to label about 1k images in testing set used for validation
+- Need to label about 1k images in testing set which will be used for validation
 
 ## Boost Scheme
 - To do
