@@ -1,8 +1,8 @@
 import random
 import numpy as np
-from utils import motion_blur
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter
+from utils import motion_blur, rain_noise
 import torchvision.transforms as transforms
 
 
@@ -230,6 +230,23 @@ class Blur:
         return img
 
 
+class Rain:
+    def __init__(self, p=.3):
+        # p : probability of data augmentation
+        self.p = p
+        self.value = np.random.choice([500, 700, 900, 1100, 1300, 1500], size=1)[0]
+        self.angle = np.random.choice(np.linspace(-30, 30, 10), size=1)[0]
+        self.beta = np.random.choice(np.linspace(0.7, 1, 10), size=1)[0]
+
+    def __call__(self, img):
+        # img : PIL image object
+        if random.uniform(0, 1) < self.p:
+            img_ = np.array(img).copy()
+            img_ = rain_noise(img_, value=self.value, angle=self.angle, beta=self.beta)
+            return Image.fromarray(img_.astype(np.uint8)).convert('RGB')
+        return img
+
+
 if __name__ == '__main__':
     img_name = 'data_aug_test/test.JPEG'
     img = Image.open(img_name)
@@ -245,6 +262,7 @@ if __name__ == '__main__':
     img = MotionBlur(p=0.1)(img)
     img = GaussianBlur(p=0.01)(img)
     img = Blur(p=0.05)(img)
+    img = Rain(p=0.2)(img)
     plt.imshow(img)
     plt.show()
 
