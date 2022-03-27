@@ -1,5 +1,7 @@
-# RobustX : classification in the presence of polluted images 
-CVPR2022 Workshop Robust Classification
+# RobustX
+---
+Classification in the presence of polluted images 
+---
 
 ## Datasets
 - train_phase1/images/ : 22987 images for training
