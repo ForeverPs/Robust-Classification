@@ -6,7 +6,7 @@ Robust classification in the presence of polluted images
 
 ## Datasets
 - train_phase1/images/ : 22987 images for training
-- train_phase1/lanel.txt : ground-truth file
+- train_phase1/label.txt : ground-truth file
 - track1_test1/ : 20000 images for testing
 
 ## Data Augmentation Scheme
