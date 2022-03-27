@@ -23,21 +23,22 @@ Robust classification in the presence of polluted images
 - MotionBlur
 - GaussianBlur
 - ConventionalBlur
+- Rain
 
 ## Architectures
 - ResNet50 (maybe SeResNet) + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
 
 ## Pretrained Models
-- ImageNet Pretrained
+- Pretrained models on ImageNet are forbidden to use.
 
 ## Training
-- To do
+- run `train.py`
 
 ## Validation
-- Need to label about 1k images in testing set which will be used for validation
+- 1k images in testing set are labeled for validation
 
 ## Boost Scheme
-- To do
+- Somehow forbidden to use.
 
 ## Reference
 - [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507) (CVPR, 2018)
