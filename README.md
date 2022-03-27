@@ -1,6 +1,6 @@
 # RobustX
 
-Classification in the presence of polluted images 
+Robust classification in the presence of polluted images 
 
 ---
 
