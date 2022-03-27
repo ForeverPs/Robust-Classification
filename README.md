@@ -14,7 +14,7 @@ Robust classification in the presence of polluted images
 - PepperSaltNoise
 - ColorPointNoise
 - GaussianNoise
-- Mosaic in black/gray/white/color
+- Mosaic in black / gray / white / color
 - RGBShuffle
 - Rotate
 - HorizontalFlip
@@ -25,7 +25,7 @@ Robust classification in the presence of polluted images
 - ConventionalBlur
 
 ## Architectures
-- ResNet50 (maybe SeResNet) + Dual Attention + FGSM regularization
+- ResNet50 (maybe SeResNet) + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
 
 ## Pretrained Models
 - ImageNet Pretrained
