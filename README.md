@@ -10,7 +10,7 @@ Robust classification in the presence of polluted images
 - track1_test1/ : 20000 images for testing
 
 ## Data Augmentation Scheme
-`Currently Support`
+`data_aug.py supports the following operations currently :`
 - PepperSaltNoise
 - ColorPointNoise
 - GaussianNoise
