@@ -3,9 +3,9 @@ import json
 import tqdm
 import torch
 from PIL import Image
-from model.se_resnet import se_resnet50
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Dataset
+from model.se_resnet import se_resnet50, se_resnet34, se_resnet18
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
@@ -44,7 +44,8 @@ def test_pipeline(test_path, batch_size):
 
 def infer(test_path, batch_size, model_path):
     test_loader = test_pipeline(test_path, batch_size)
-    model = se_resnet50(num_classes=20)
+    # model = se_resnet34(num_classes=20)
+    model = se_resnet18(num_classes=20)
 
     # remove module prefix
     new_dict = dict()
@@ -80,6 +81,6 @@ def infer(test_path, batch_size, model_path):
 if __name__ == '__main__':
     test_path = 'data/track1_test1/'
     batch_size = 64
-    model_path = 'saved_models/epoch_63_acc_1.000.pth'
+    model_path = 'saved_models/epoch_400_acc_1.000.pth'
     infer(test_path, batch_size, model_path)
 
