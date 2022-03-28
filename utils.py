@@ -5,6 +5,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def extend(src, offsets=5):
+    dst = src.copy()
+    rows, cols, _ = src.shape
+    x = np.array(list(range(rows)))
+    y = np.array(list(range(cols)))
+    yv, xv = np.meshgrid(y, x)
+
+    random1 = np.random.randint(0, offsets, size=yv.shape)
+    random2 = np.random.randint(0, offsets, size=xv.shape)
+
+    yv_random = yv + random1
+    xv_random = xv + random2
+
+    xv_random[xv_random >= rows] = rows - 1
+    yv_random[yv_random >= cols] = cols - 1
+    dst[xv, yv] = src[xv_random, yv_random]
+    return dst
+
+
 def rand_bbox(size, lam):
     W, H = size[2], size[3]
     cut_rat = np.sqrt(1. - lam)
