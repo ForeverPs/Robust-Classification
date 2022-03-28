@@ -7,7 +7,7 @@ Robust classification in the presence of polluted images
 ## Conclusion
 - training more epochs = better performance, verified on SeResNet18, SeResNet34 and SeResNet50
 - Pretrained models are helpful for improving robustness (Fordidden to use)
-- Add more mlp layers, using LeakyReLU(0.1) and Dropout(0.2)
+- Add more mlp layers, using `LeakyReLU(0.1)` and `Dropout(0.2)`
 
 
 
