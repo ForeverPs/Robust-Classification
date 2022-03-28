@@ -149,6 +149,38 @@ def se_resnet152(num_classes=1000):
     return model
 
 
+class SeResNet(nn.Module):
+    def __init__(self, depth, num_classes, dropout=0.2):
+        super(SeResNet, self).__init__()
+        if depth == 18:
+            model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+            model.avgpool = nn.AdaptiveAvgPool2d(1)
+        else:
+            model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
+            model.avgpool = nn.AdaptiveAvgPool2d(1)
+
+        channel_in = model.fc.in_features
+        self.backbone = nn.Sequential(*list(model.children())[:-1])
+
+        self.cls_head = nn.Sequential(
+            self.cls_block(channel_in, 256, dropout),
+            self.cls_block(256, 128, dropout),
+            nn.Linear(128, num_classes))
+
+    def cls_block(self, channel_in, channel_out, p):
+        block = nn.Sequential(
+            nn.Linear(channel_in, channel_out),
+            nn.Dropout(p),
+            nn.LeakyReLU(0.1),
+        )
+        return block
+
+    def forward(self, x):
+        feat = self.backbone(x).view(x.shape[0], -1)
+        cls = self.cls_head(feat)
+        return feat, cls
+
+
 if __name__ == '__main__':
     model = se_resnet50(num_classes=20).eval()
     x = torch.randn(64, 3, 224, 224)

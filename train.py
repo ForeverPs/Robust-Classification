@@ -11,7 +11,7 @@ from utils import cutmix
 from data import data_pipeline
 from tensorboardX import SummaryWriter
 import torchvision.transforms as transforms
-from model.se_resnet import se_resnet50, se_resnet18, se_resnet34
+from model.se_resnet import se_resnet50, se_resnet18, se_resnet34, SeResNet
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
@@ -23,14 +23,15 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
 
     # model = se_resnet50(num_classes=20)
     # model = se_resnet34(num_classes=20)
-    model = se_resnet18(num_classes=20)
+    # model = se_resnet18(num_classes=20)
+    model = SeResNet(depth=18, num_classes=20)
     model = nn.DataParallel(model).to(device)
 
     optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=.9, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
     criterion = nn.CrossEntropyLoss()
 
-    best_acc = 0.98
+    best_acc = 0.99
     for epoch in range(epochs):
         train_loss, val_loss = 0, 0
         train_acc, val_acc = 0, 0
@@ -40,11 +41,11 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             x = x.float().to(device)
             y = y.long().to(device)
             if random.uniform(0, 1) > cut_mix:
-                predict = model(x)
+                feat, predict = model(x)
                 loss = criterion(predict, y)
             else:
                 x, target_a, target_b, lam = cutmix(x, y)
-                predict = model(x)
+                feat, predict = model(x)
                 loss = criterion(predict, target_a) * lam + criterion(predict, target_b) * (1. - lam)
 
             optimizer.zero_grad()
@@ -62,7 +63,7 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
         for x, y in tqdm.tqdm(val_loader):
             x = x.float().to(device)
             y = y.long().to(device)
-            predict = model(x)
+            feat, predict = model(x)
             loss = criterion(predict, y)
 
             optimizer.zero_grad()
@@ -129,4 +130,4 @@ if __name__ == '__main__':
                              std=[0.229, 0.224, 0.225]),
     ])
 
-    train(epochs, batch_size, transform, lr=lr, image_txt=image_txt, cut_mix=0.3)
+    train(epochs, batch_size, transform, lr=lr, image_txt=image_txt, cut_mix=0.5)
