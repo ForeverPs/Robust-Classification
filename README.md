@@ -47,7 +47,7 @@ Robust classification in the presence of polluted images
 - 8241 images in testing set are labeled for validation
 
 ## Boost Scheme
-- torch.FiveCrop(224) introduces no further improvement
+- `torch.FiveCrop(224)` introduces no further improvement
 
 ## Reference
 - [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507) (CVPR, 2018)
