@@ -39,6 +39,9 @@ Robust classification in the presence of polluted images
 - SeResNet18 + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
 
+## To do
+- group similarity
+
 ## Pretrained Models
 - [Pretrained models](https://drive.google.com/drive/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy?usp=sharing) on the original training set with 1k epochs
 
