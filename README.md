@@ -7,7 +7,7 @@ Robust classification in the presence of polluted images
 ## Conclusion
 - training more epochs = better performance, verified on SeResNet18, SeResNet34 and SeResNet50
 - Pretrained models are helpful for improving robustness (Fordidden to use)
-- Add more mlp layers, using `LeakyReLU(0.1)` and `Dropout(0.2)`
+- Add more mlp layers, using `LeakyReLU(0.1)` and `Dropout(0.3)`
 
 
 
@@ -31,9 +31,10 @@ Robust classification in the presence of polluted images
 - GaussianBlur
 - ConventionalBlur
 - Rain
+- Extend
 
 ## Architectures
-- ResNet50 (maybe SeResNet) + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
+- SeResNet18 + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
 
 ## Pretrained Models
 - Pretrained models on ImageNet are forbidden to use.
@@ -43,7 +44,7 @@ Robust classification in the presence of polluted images
 - add `cutmix` method
 
 ## Validation
-- 1k images in testing set are labeled for validation
+- 8241 images in testing set are labeled for validation
 
 ## Boost Scheme
 - Somehow forbidden to use.
