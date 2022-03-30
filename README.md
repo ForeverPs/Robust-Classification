@@ -33,6 +33,8 @@ Robust classification in the presence of polluted images
 - Rain
 - Extend
 
+![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
+
 ## Architectures
 - SeResNet18 + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
 
