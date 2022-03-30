@@ -37,6 +37,7 @@ Robust classification in the presence of polluted images
 
 ## Architectures
 - SeResNet18 + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
+- ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
 
 ## Pretrained Models
 - Pretrained models on ImageNet are forbidden to use.
