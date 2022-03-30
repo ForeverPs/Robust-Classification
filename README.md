@@ -40,7 +40,7 @@ Robust classification in the presence of polluted images
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
 
 ## Pretrained Models
-- Provide trained models on the original training set with 1k epochs
+- [Pretrained models](https://drive.google.com/drive/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy?usp=sharing) on the original training set with 1k epochs
 
 ## Training
 - run `train.py`
