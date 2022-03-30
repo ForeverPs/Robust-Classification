@@ -10,9 +10,9 @@ from eval import get_acc
 from utils import cutmix
 from data import data_pipeline
 from loss import energy_ranking
+from model.se_resnet import SeResNet
 from tensorboardX import SummaryWriter
 import torchvision.transforms as transforms
-from model.se_resnet import se_resnet50, se_resnet18, se_resnet34, SeResNet
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -22,18 +22,19 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/label.txt', cut_mix=0.5):
     train_loader, val_loader = data_pipeline(image_txt, transform, batch_size)
 
-    # model = se_resnet50(num_classes=20)
-    # model = se_resnet34(num_classes=20)
-    # model = se_resnet18(num_classes=20)
-    model = SeResNet(depth=18, num_classes=20)
-    # model = nn.DataParallel(model).to(device)
+    model = SeResNet(depth=18, num_classes=20, dropout=0.3)
+    try:
+        model.load_state_dict(torch.load(model_path, map_location='cpu'))
+        print('Training with a Pretrained Model...')
+    except:
+        print('Training from Scratch...')
     model = model.to(device)
 
     optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=.9, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
     criterion = nn.CrossEntropyLoss()
 
-    best_acc = 0.99
+    best_acc = 0.98
     for epoch in range(epochs):
         train_loss, val_loss = 0, 0
         train_acc, val_acc = 0, 0
@@ -43,16 +44,14 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             x = x.float().to(device)
             y = y.long().to(device)
 
-            # if random.uniform(0, 1) > cut_mix:
-            #     feat, predict = model(x)
-            #     loss = criterion(predict, y) + 0.1 * energy_ranking(feat, y)
-            # else:
-            #     x, target_a, target_b, lam = cutmix(x, y)
-            #     feat, predict = model(x)
-            #     loss = criterion(predict, target_a) * lam + criterion(predict, target_b) * (1. - lam) + 0.1 * energy_ranking(feat, y)
+            if random.uniform(0, 1) >= cut_mix:
+                feat, predict = model(x)
+                loss = criterion(predict, y) + 0.075 * energy_ranking(feat, y)
+            else:
+                x, target_a, target_b, lam = cutmix(x, y)
+                feat, predict = model(x)
+                loss = criterion(predict, target_a) * lam + criterion(predict, target_b) * (1. - lam)
 
-            feat, predict = model(x)
-            loss = criterion(predict, y) + 1e-3 * energy_ranking(feat, y)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -92,7 +91,8 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
         if val_acc >= best_acc:
             best_acc = val_acc
             model_name = 'epoch_%d_acc_%.3f' % (epoch, val_acc)
-            torch.save(model.state_dict(), './saved_models/%s.pth' % model_name)
+            os.makedirs('./saved_models/energy_ranking/', exist_ok=True)
+            torch.save(model.state_dict(), './saved_models/energy_ranking/%s.pth' % model_name)
 
         writer.add_scalar('train/loss', train_loss, epoch)
         writer.add_scalar('train/acc', train_acc, epoch)
@@ -102,6 +102,7 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
 
 
 if __name__ == '__main__':
+    model_path = '/opt/tiger/debug_server/Robust-Classification/saved_models/epoch_1047_acc_1.000.pth'
     logdir = './tensorboard/SeResNet18/'
     shutil.rmtree(logdir, True)
     writer = SummaryWriter(logdir=logdir)
@@ -114,10 +115,10 @@ if __name__ == '__main__':
     # data augmentation
     transform = transforms.Compose([
         transforms.Resize(256),
-        PepperSaltNoise(p=0.15),
-        ColorPointNoise(p=0.15),
-        GaussianNoise(p=0.15),
-        Mosaic(p=0.15),
+        PepperSaltNoise(p=0.2),
+        ColorPointNoise(p=0.2),
+        GaussianNoise(p=0.2),
+        Mosaic(p=0.2),
         RGBShuffle(p=0.05),
         Rotate(p=0.1),
         HFlip(p=0.1),
