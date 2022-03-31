@@ -70,10 +70,6 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             feat, predict = model(x)
             loss = criterion(predict, y)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
             val_loss = val_loss + loss.item()
 
             _, predict_cls = torch.max(predict, dim=-1)
