@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from model.se_module import SELayer
-from torchvision.models import ResNet
+from model.resnet import ResNet
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -86,22 +86,24 @@ class SEBottleneck(nn.Module):
         return out
 
 
-def se_resnet18(num_classes=1000):
+def se_resnet18(num_classes=1000, mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225]):
     """Constructs a ResNet-18 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+    model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes, mean=mean, std=std)
     model.avgpool = nn.AdaptiveAvgPool2d(1)
     return model
 
 
-def se_resnet34(num_classes=1000):
+def se_resnet34(num_classes=1000, mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225]):
     """Constructs a ResNet-34 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
+    model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes, mean=mean, std=std)
     model.avgpool = nn.AdaptiveAvgPool2d(1)
     return model
 

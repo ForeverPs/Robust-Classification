@@ -2,6 +2,7 @@ import os
 import tqdm
 import torch
 import shutil
+import argparse
 import random
 import torch.nn as nn
 from data_aug import *
@@ -9,28 +10,40 @@ from torch import optim
 from eval import get_acc
 from utils import cutmix
 from data import data_pipeline
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 import torchvision.transforms as transforms
 from model.se_resnet import se_resnet50, se_resnet18, se_resnet34
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/label.txt', cut_mix=0.5):
-    train_loader, val_loader = data_pipeline(image_txt, transform, batch_size)
+def train(
+    epochs,
+    batch_size,
+    transform,
+    lr=1e-3,
+    train_image_txt='data/train_phase1/label.txt',
+    val_image_txt='data/track1_test1/label.txt',
+    eval_step = 2,
+    cut_mix=0.5,
+    checkpoint_path=''
+):
+    train_loader, val_loader = data_pipeline(
+        train_image_txt, val_image_txt, transform, batch_size)
 
-    # model = se_resnet50(num_classes=20)
-    # model = se_resnet34(num_classes=20)
     model = se_resnet18(num_classes=20)
     model = nn.DataParallel(model).to(device)
 
-    optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=.9, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
+    # optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=.9, weight_decay=1e-4)
+    optimizer = optim.Adamax(model.parameters(), lr=lr, weight_decay=1e-3)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, 20 * len(train_loader.dataset) // batch_size, 1e-7)
     criterion = nn.CrossEntropyLoss()
 
-    best_acc = 0.98
+    best_acc = 0.8
     for epoch in range(epochs):
         train_loss, val_loss = 0, 0
         train_acc, val_acc = 0, 0
@@ -45,7 +58,8 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             else:
                 x, target_a, target_b, lam = cutmix(x, y)
                 predict = model(x)
-                loss = criterion(predict, target_a) * lam + criterion(predict, target_b) * (1. - lam)
+                loss = criterion(predict, target_a) * lam + \
+                    criterion(predict, target_b) * (1. - lam)
 
             optimizer.zero_grad()
             loss.backward()
@@ -58,21 +72,19 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
         # update learning rate
         scheduler.step()
 
-        model.eval()
-        for x, y in tqdm.tqdm(val_loader):
-            x = x.float().to(device)
-            y = y.long().to(device)
-            predict = model(x)
-            loss = criterion(predict, y)
+        with torch.no_grad():
+            if epoch % eval_step != 0:
+                continue
+            model.eval()
+            for x, y in tqdm.tqdm(val_loader):
+                x = x.float().to(device)
+                y = y.long().to(device)
+                predict = model(x)
+                loss = criterion(predict, y)
+                val_loss = val_loss + loss.item()
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            val_loss = val_loss + loss.item()
-
-            _, predict_cls = torch.max(predict, dim=-1)
-            val_acc += get_acc(predict_cls, y)
+                _, predict_cls = torch.max(predict, dim=-1)
+                val_acc += get_acc(predict_cls, y)
 
         train_loss = train_loss / len(train_loader)
         train_acc = train_acc / len(train_loader)
@@ -86,7 +98,8 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
         if val_acc >= best_acc:
             best_acc = val_acc
             model_name = 'epoch_%d_acc_%.3f' % (epoch, val_acc)
-            torch.save(model.state_dict(), './saved_models/%s.pth' % model_name)
+            torch.save(model.state_dict(), checkpoint_path + '/%s.pth' %
+                       model_name)
 
         writer.add_scalar('train/loss', train_loss, epoch)
         writer.add_scalar('train/acc', train_acc, epoch)
@@ -96,14 +109,33 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
 
 
 if __name__ == '__main__':
-    logdir = './tensorboard/SeResNet18/'
-    shutil.rmtree(logdir, True)
-    writer = SummaryWriter(logdir=logdir)
+    # logdir = './tensorboard/SeResNet18/'
+    # shutil.rmtree(logdir, True)
+    # writer = SummaryWriter(log_dir=logdir)
+
+    parser = argparse.ArgumentParser()
+    # 指定保存特征字
+    parser.add_argument("--name", type=str, default="", help='log_name')
+    opt = parser.parse_args()
+
+    # 根据特征字和当前时间确定目录名字
+    import time
+    cur_t = time.strftime('%Y-%m-%d', time.localtime())
+    log_path = f'./log/log_{opt.name}_{cur_t}'
+    checkpoint_path = f'./log/checkpoint_{opt.name}_{cur_t}'
+
+
+    # 创建目录名字，并且备份当前代码
+    writer = SummaryWriter(log_dir=log_path)
+    os.makedirs(checkpoint_path, exist_ok=True)
+    os.system(f'cp ./*.py {log_path}')
+    os.system(f'cp -r model {log_path}')
 
     lr = 1e-3
     epochs = 3000
     batch_size = 64
-    image_txt = 'data/train_phase1/label.txt'
+    train_image_txt = 'data/train_phase1/label.txt'
+    val_image_txt = 'data/track1_test1/label.txt'
 
     # data augmentation
     transform = transforms.Compose([
@@ -122,11 +154,10 @@ if __name__ == '__main__':
         Blur(p=0.01),
         Rain(p=0.15),
         # transforms.Resize(224),
-        transforms.RandomResizedCrop(224), 
+        transforms.RandomResizedCrop(224),
         # transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
     ])
 
-    train(epochs, batch_size, transform, lr=lr, image_txt=image_txt, cut_mix=0.3)
+    train(epochs, batch_size, transform, lr=lr,
+          train_image_txt=train_image_txt, val_image_txt=val_image_txt, cut_mix=0.3, checkpoint_path=checkpoint_path)

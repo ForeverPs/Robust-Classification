@@ -44,20 +44,18 @@ class MyDataset(Dataset):
         return self.transform(img), int(label)
 
 
-def data_pipeline(image_txt, transform, batch_size, val_path='data/validation/'):
+def data_pipeline(train_image_txt, val_image_text, transform, batch_size):
     # only center crop for validation image
     val_transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
     ])
 
-    data_pairs, _ = parse_txt(image_txt)
-    val_pairs = get_val_pairs(val_path)
+    data_pairs, _ = parse_txt(train_image_txt)
+    val_pairs, _ = parse_txt(val_image_text)
     train_set = MyDataset(data_pairs, transform)
-    val_set = MyDataset(val_pairs, val_transform, path_prefix='')
+    val_set = MyDataset(val_pairs, val_transform, path_prefix='data/track1_test1/images/')
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=8)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=8)
     return train_loader, val_loader
@@ -65,6 +63,7 @@ def data_pipeline(image_txt, transform, batch_size, val_path='data/validation/')
 
 if __name__ == '__main__':
     image_txt = 'data/train_phase1/label.txt'
+    val_image_txt = 'data/track1_test1/label.txt'
 
     # data augmentation
     transform = transforms.Compose([
@@ -84,12 +83,10 @@ if __name__ == '__main__':
         transforms.Resize(224),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]),
     ])
 
     batch_size = 64
     val_ratio = 0.2
-    train_loader, val_loader = data_pipeline(image_txt, transform, batch_size)
+    train_loader, val_loader = data_pipeline(image_txt, val_image_txt, transform, batch_size)
     for x, y in tqdm.tqdm(val_loader):
         print(x.shape, y.shape, torch.min(x), torch.max(x))
