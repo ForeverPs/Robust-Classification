@@ -41,6 +41,7 @@ Robust classification in the presence of polluted images
 
 ## To Do
 - group similarity
+- random block shuffle
 
 ## Pretrained Models
 - [Pretrained models](https://drive.google.com/drive/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy?usp=sharing) on the original training set with 1k epochs
