@@ -4,6 +4,42 @@ from model.se_module import SELayer
 from model.resnet import ResNet
 
 
+def convert2bit(input_n, B):
+    num_ = input_n.long()
+    exp_bts = torch.arange(0, B)
+    exp_bts = exp_bts.repeat(input_n.shape + (1,)).cuda()
+    bits = torch.div(num_.unsqueeze(-1), 2 ** exp_bts, rounding_mode='trunc')
+    bits = bits % 2
+    bits = bits.reshape(bits.shape[0], -1).float()
+    return bits
+
+
+class Bitflow(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x, b_):
+        ctx.constant = b_
+        scale = 2 ** b_
+        out = torch.round(x * scale - 0.5)
+        out = convert2bit(out, b_)
+        return out
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        b, _ = grad_output.shape
+        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2) / ctx.constant
+        return grad_num, None
+
+
+class BitLayer(nn.Module):
+    def __init__(self, B):
+        super(BitLayer, self).__init__()
+        self.B = B
+
+    def forward(self, x):
+        out = Bitflow.apply(x, self.B)
+        return out
+
+
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
 
@@ -149,6 +185,74 @@ def se_resnet152(num_classes=1000):
     model = ResNet(SEBottleneck, [3, 8, 36, 3], num_classes=num_classes)
     model.avgpool = nn.AdaptiveAvgPool2d(1)
     return model
+
+
+class SeResNet(nn.Module):
+    def __init__(self, depth, num_classes, dropout=0.2):
+        super(SeResNet, self).__init__()
+        if depth == 18:
+            model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+            model.avgpool = nn.AdaptiveAvgPool2d(1)
+        else:
+            model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
+            model.avgpool = nn.AdaptiveAvgPool2d(1)
+
+        channel_in = model.fc.in_features
+        self.backbone = nn.Sequential(*list(model.children())[:-1])
+
+        self.cls_head = nn.Sequential(
+            self.cls_block(channel_in, 256, dropout),
+            self.cls_block(256, 128, dropout),
+            nn.Linear(128, num_classes))
+
+    def cls_block(self, channel_in, channel_out, p):
+        block = nn.Sequential(
+            nn.Linear(channel_in, channel_out),
+            nn.Dropout(p),
+            nn.LeakyReLU(0.1),
+        )
+        return block
+
+    def forward(self, x):
+        feat = self.backbone(x).view(x.shape[0], -1)
+        cls = self.cls_head(feat)
+        return feat, cls
+
+
+class BitSeResNet(nn.Module):
+    def __init__(self, depth, num_classes, num_bit=2, dropout=0.2):
+        super(BitSeResNet, self).__init__()
+        if depth == 18:
+            model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+            model.avgpool = nn.AdaptiveAvgPool2d(1)
+        else:
+            model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
+            model.avgpool = nn.AdaptiveAvgPool2d(1)
+
+        channel_in = model.fc.in_features
+        self.backbone = nn.Sequential(*list(model.children())[:-1])
+
+        self.cls_head = nn.Sequential(
+            self.cls_block(channel_in * num_bit, 256, dropout),
+            self.cls_block(256, 128, dropout),
+            nn.Linear(128, num_classes))
+
+        self.sigmoid = nn.Sigmoid()
+        self.bit_layer = BitLayer(num_bit)
+
+    def cls_block(self, channel_in, channel_out, p):
+        block = nn.Sequential(
+            nn.Linear(channel_in, channel_out),
+            nn.Dropout(p),
+            nn.LeakyReLU(0.1),
+        )
+        return block
+
+    def forward(self, x):
+        feat = self.backbone(x).view(x.shape[0], -1)
+        bit_feat = self.bit_layer(self.sigmoid(feat))
+        cls = self.cls_head(bit_feat)
+        return bit_feat, cls
 
 
 if __name__ == '__main__':

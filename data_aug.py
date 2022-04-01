@@ -2,8 +2,8 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter
-from utils import motion_blur, rain_noise
 import torchvision.transforms as transforms
+from utils import motion_blur, rain_noise, extend
 
 
 class PepperSaltNoise:
@@ -247,24 +247,40 @@ class Rain:
         return img
 
 
+class Extend:
+    def __init__(self, p=.3):
+        # p : probability of data augmentation
+        self.p = p
+        self.offset = np.random.choice(list(range(3, 10)), size=1)[0]
+
+    def __call__(self, img):
+        # img : PIL image object
+        if random.uniform(0, 1) < self.p:
+            img_ = np.array(img).copy()
+            img_ = extend(img_, self.offset)
+            return Image.fromarray(img_.astype(np.uint8)).convert('RGB')
+        return img
+
+
 if __name__ == '__main__':
     img_name = 'data_aug_test/test.JPEG'
     img = Image.open(img_name)
-    img = PepperSaltNoise(p=0.2)(img)
-    img = ColorPointNoise(p=0.2)(img)
-    img = GaussianNoise(p=0.2)(img)
-    img = Mosaic(p=0.2)(img)
-    img = RGBShuffle(p=0.05)(img)
-    img = Rotate(p=0.1, angle=10)(img)
-    img = HFlip(p=0.1)(img)
-    img = VFlip(p=0.05)(img)
-    img = RandomCut(p=0.2)(img)
-    img = MotionBlur(p=0.1)(img)
-    img = GaussianBlur(p=0.01)(img)
-    img = Blur(p=0.05)(img)
-    img = Rain(p=0.2)(img)
+    img = PepperSaltNoise(p=1)(img)
+    # img = ColorPointNoise(p=0.2)(img)
+    # img = GaussianNoise(p=0.2)(img)
+    # img = Mosaic(p=0.2)(img)
+    # img = RGBShuffle(p=0.05)(img)
+    # img = Rotate(p=0.1, angle=10)(img)
+    # img = HFlip(p=0.1)(img)
+    # img = VFlip(p=0.05)(img)
+    # img = RandomCut(p=0.2)(img)
+    # img = MotionBlur(p=0.1)(img)
+    # img = GaussianBlur(p=0.01)(img)
+    # img = Blur(p=0.05)(img)
+    # img = Rain(p=0.2)(img)
     plt.imshow(img)
     plt.show()
+    # plt.imsave('img.png', np.array(img))
 
 
 

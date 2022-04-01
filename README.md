@@ -4,6 +4,13 @@ Robust classification in the presence of polluted images
 
 ---
 
+## Conclusion
+- training more epochs = better performance, verified on SeResNet18, SeResNet34 and SeResNet50
+- Pretrained models are helpful for improving robustness (Fordidden to use)
+- Add more mlp layers, using `LeakyReLU(0.1)` and `Dropout(0.3)`
+
+
+
 ## Datasets
 - train_phase1/images/ : 22987 images for training
 - train_phase1/label.txt : ground-truth file
@@ -24,22 +31,30 @@ Robust classification in the presence of polluted images
 - GaussianBlur
 - ConventionalBlur
 - Rain
+- Extend
+
+![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
 ## Architectures
-- ResNet50 (maybe SeResNet) + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
+- SeResNet18 + (Dual Attention) + FGSM regularization(To Do) + Energy Ranking
+![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
+
+## To Do
+- group similarity
+- random block shuffle
 
 ## Pretrained Models
-- Pretrained models on ImageNet are forbidden to use.
+- [Pretrained models](https://drive.google.com/drive/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy?usp=sharing) on the original training set with 1k epochs
 
 ## Training
 - run `train.py`
 - add `cutmix` method
 
 ## Validation
-- 1k images in testing set are labeled for validation
+- 8241 images in testing set are labeled for validation
 
 ## Boost Scheme
-- Somehow forbidden to use.
+- `torch.FiveCrop(224)` introduces no further improvement
 
 ## Reference
 - [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507) (CVPR, 2018)
