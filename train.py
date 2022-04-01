@@ -6,13 +6,14 @@ import argparse
 import random
 import torch.nn as nn
 from data_aug import *
-from torch import optim
+from torch import optim, xlogy
 from eval import get_acc
 from utils import cutmix
 from data import data_pipeline
 from torch.utils.tensorboard import SummaryWriter
 import torchvision.transforms as transforms
 from model.se_resnet import se_resnet50, se_resnet18, se_resnet34
+from attack_tool import fgsm_attack, pgd_inf_attack
 
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
@@ -60,6 +61,17 @@ def train(
                 predict = model(x)
                 loss = criterion(predict, target_a) * lam + \
                     criterion(predict, target_b) * (1. - lam)
+            
+            # adv train
+            fgsm_x = fgsm_attack(model, x, y)
+            predict = model(fgsm_x)
+            fgsm_loss = criterion(predict, y)
+
+            # pgd_x = pgd_inf_attack(model, x, y)
+            # predict = model(pgd_x)
+            # pgd_loss = criterion(predict, y)
+
+            loss = loss + 0.1 * fgsm_loss # + 0.1 * pgd_loss
 
             optimizer.zero_grad()
             loss.backward()
