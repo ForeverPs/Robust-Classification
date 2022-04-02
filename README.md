@@ -32,6 +32,7 @@ Robust classification in the presence of polluted images
 - ConventionalBlur
 - Rain
 - Extend
+- BlockShuffle
 
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
@@ -41,17 +42,15 @@ Robust classification in the presence of polluted images
 
 ## To Do
 - group similarity
-- random block shuffle
 
 ## Pretrained Models
 - [Pretrained models](https://drive.google.com/drive/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy?usp=sharing) on the original training set with 1k epochs
 
 ## Training
 - run `train.py`
-- add `cutmix` method
 
 ## Validation
-- 8241 images in testing set are labeled for validation
+- 20k images in testing set are labeled for validation
 
 ## Boost Scheme
 - `torch.FiveCrop(224)` introduces no further improvement
