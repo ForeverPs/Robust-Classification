@@ -33,6 +33,8 @@ Robust classification in the presence of polluted images
 - Rain
 - Extend
 - BlockShuffle
+- LocalShuffle (for learning local spatial feature)
+- RandomPadding (for defense of adversarial attacks)
 
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
