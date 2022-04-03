@@ -23,7 +23,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/label.txt', cut_mix=0.0):
     all_loader, train_loader, val_loader = data_pipeline(image_txt, transform, batch_size)
 
-    model = SeResNet(depth=18, num_classes=20, dropout=0.3)
+    model = SeResNet(depth=18, num_classes=20, dropout=0.1)
     try:
         model.load_state_dict(torch.load(model_path, map_location='cpu'), strict=True)
         print('Training with a Pretrained Model...')
@@ -37,7 +37,7 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=70, gamma=0.5)
     criterion = nn.CrossEntropyLoss()
 
-    best_acc = 0.97
+    best_acc = 0.8
     for epoch in range(epochs):
         train_loss, val_loss = 0, 0
         train_acc, val_acc = 0, 0
@@ -50,11 +50,14 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             # Cut mix training
             if random.uniform(0, 1) >= cut_mix:
                 feat, predict = model(x)
-                loss_ = criterion(predict, y) + 0.2 * energy_ranking(feat, y)
+                loss_ = criterion(predict, y) + 0.1 * energy_ranking(feat, y)
             else:
                 x, target_a, target_b, lam = cutmix(x, y)
                 feat, predict = model(x)
                 loss_ = criterion(predict, target_a) * lam + criterion(predict, target_b) * (1. - lam)
+            
+            # predict result on clean images
+            _, predict_cls = torch.max(predict, dim=-1)
             
             # Mix up training
             # inputs, targets_a, targets_b, lam = mixup_data(x, y, 1, use_cuda=True)
@@ -65,13 +68,14 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             # Untarget FGSM training
             x_adv = fgsm_attack(model, x.clone(), y)
             _, predict_adv = model(x_adv.to(device))
-            loss_adv = criterion(predict_adv, y)
+            loss_adv = criterion(predict_adv, predict_cls)
 
             # Target FGSM training
             x_adv = target_fgsm_attack(model, x.clone())
             _, predict_adv_target = model(x_adv.to(device))
-            loss_adv_target = criterion(predict_adv_target, y)
+            loss_adv_target = criterion(predict_adv_target, predict_cls)
 
+            # TRADES
             loss = loss_ + adv_weight * loss_adv + adv_weight * loss_adv_target # + 0.3 * loss_mixup
 
             optimizer.zero_grad()
@@ -79,7 +83,6 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             optimizer.step()
             train_loss = train_loss + loss.item()
 
-            _, predict_cls = torch.max(predict, dim=-1)
             _, predict_cls_adv = torch.max(predict_adv, dim=-1)
             _, predict_cls_adv_target = torch.max(predict_adv_target, dim=-1)
             train_acc += (get_acc(predict_cls, y) + get_acc(predict_cls_adv, y) * adv_weight + get_acc(predict_cls_adv_target, y) * adv_weight) / (1 + 2 * adv_weight)
@@ -112,8 +115,8 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
         if val_acc >= best_acc:
             best_acc = val_acc
             model_name = 'epoch_%d_acc_%.3f' % (epoch, val_acc)
-            os.makedirs('./saved_models/energy_ranking_seres18/', exist_ok=True)
-            torch.save(model.state_dict(), './saved_models/energy_ranking_seres18/%s.pth' % model_name)
+            os.makedirs('./saved_models/energy_ranking_only_trainset/', exist_ok=True)
+            torch.save(model.state_dict(), './saved_models/energy_ranking_only_trainset/%s.pth' % model_name)
 
         writer.add_scalar('train/loss', train_loss, epoch)
         writer.add_scalar('train/acc', train_acc, epoch)
@@ -124,14 +127,14 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
 
 if __name__ == '__main__':
     model_path = None
-    logdir = './tensorboard/SeResNet18/'
+    logdir = './tensorboard/SeResNet18_only_trainset/'
     shutil.rmtree(logdir, True)
     writer = SummaryWriter(logdir=logdir)
 
     lr = 1e-3
     epochs = 3000
     batch_size = 64
-    adv_weight = 0.02
+    adv_weight = 1  # TRADES : 1 or 6
     image_txt = 'data/train_phase1/label.txt'
 
     # data augmentation
@@ -152,7 +155,8 @@ if __name__ == '__main__':
         Rain(p=0.1),
         Extend(p=0.05),
         BlockShuffle(p=0.1),
-        LocalShuffle(p=0.1),
+        LocalShuffle(p=0.05),
+        RandomPadding(p=0.2),
         transforms.ToTensor()
     ])
 

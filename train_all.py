@@ -23,7 +23,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/label.txt', cut_mix=0.0):
     all_loader, train_loader, val_loader = data_pipeline(image_txt, transform, batch_size)
 
-    model = SeResNet(depth=18, num_classes=20, dropout=0.3)
+    model = SeResNet(depth=18, num_classes=20, dropout=0.1)
     try:
         model.load_state_dict(torch.load(model_path, map_location='cpu'), strict=True)
         print('Training with a Pretrained Model...')
@@ -50,11 +50,14 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             # Cut mix training
             if random.uniform(0, 1) >= cut_mix:
                 feat, predict = model(x)
-                loss_ = criterion(predict, y) + 0.2 * energy_ranking(feat, y)
+                loss_ = criterion(predict, y) + 0.1 * energy_ranking(feat, y)
             else:
                 x, target_a, target_b, lam = cutmix(x, y)
                 feat, predict = model(x)
                 loss_ = criterion(predict, target_a) * lam + criterion(predict, target_b) * (1. - lam)
+            
+            # predict result on clean images
+            _, predict_cls = torch.max(predict, dim=-1)
             
             # Mix up training
             # inputs, targets_a, targets_b, lam = mixup_data(x, y, 1, use_cuda=True)
@@ -63,14 +66,16 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             # loss_mixup = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)
 
             # Untarget FGSM training
-            x_adv = fgsm_attack(model, x.clone(), y)
+            x_adv = fgsm_attack(model, x.clone(), y, T=1)
             _, predict_adv = model(x_adv.to(device))
-            loss_adv = criterion(predict_adv, y)
+            # loss_adv = criterion(predict_adv, y)
+            loss_adv = criterion(predict_adv, predict_cls)
 
             # Target FGSM training
-            x_adv = target_fgsm_attack(model, x.clone())
+            x_adv = target_fgsm_attack(model, x.clone(), T=1)
             _, predict_adv_target = model(x_adv.to(device))
-            loss_adv_target = criterion(predict_adv_target, y)
+            # loss_adv_target = criterion(predict_adv_target, y)
+            loss_adv_target = criterion(predict_adv_target, predict_cls)
 
             loss = loss_ + adv_weight * loss_adv + adv_weight * loss_adv_target # + 0.3 * loss_mixup
 
@@ -79,7 +84,7 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
             optimizer.step()
             train_loss = train_loss + loss.item()
 
-            _, predict_cls = torch.max(predict, dim=-1)
+            # _, predict_cls = torch.max(predict, dim=-1)
             _, predict_cls_adv = torch.max(predict_adv, dim=-1)
             _, predict_cls_adv_target = torch.max(predict_adv_target, dim=-1)
             train_acc += (get_acc(predict_cls, y) + get_acc(predict_cls_adv, y) * adv_weight + get_acc(predict_cls_adv_target, y) * adv_weight) / (1 + 2 * adv_weight)
@@ -132,7 +137,7 @@ if __name__ == '__main__':
     lr = 1e-3
     epochs = 3000
     batch_size = 64
-    adv_weight = 0.02
+    adv_weight = 1  # TRADES: 1 or 6
     image_txt = 'data/train_phase1/label.txt'
 
     # data augmentation
@@ -153,7 +158,8 @@ if __name__ == '__main__':
         Rain(p=0.1),
         Extend(p=0.05),
         BlockShuffle(p=0.1),
-        LocalShuffle(p=0.1),
+        LocalShuffle(p=0.05),
+        RandomPadding(p=0.2),
         transforms.ToTensor()
     ])
 

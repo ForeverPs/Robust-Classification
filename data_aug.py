@@ -301,6 +301,29 @@ class LocalShuffle:
         return img
 
 
+class RandomPadding:
+    def __init__(self, p=.3):
+        # p : probability of data augmentation
+        self.p = p
+
+    def __call__(self, img):
+        # img : PIL image object
+        if random.uniform(0, 1) < self.p:
+            w, h = img.size
+            scale = np.random.choice(np.linspace(0.65, 0.95, num=10), size=1)[0]
+            w_, h_ = int(w * scale), int(h * scale)
+            resize_img = np.array(img.resize((w_, h_)))
+            style = np.random.choice([0, 1], size=1)[0]
+            if style == 0:  # gray padding
+                img_ = 255 * np.random.choice(np.linspace(0, 1, num=10), size=1)[0] * np.ones((h, w, 3))
+            else:  # color padding
+                img_ = 255 * np.random.uniform(0, 1, size=(h, w, 3))
+            start_w = int(np.random.choice(np.linspace(0, int(w * (1 - scale)) - 1, num=10), size=1)[0])
+            start_h = int(np.random.choice(np.linspace(0, int(h * (1 - scale)) - 1, num=10), size=1)[0])
+            img_[start_h: start_h + h_, start_w: start_w + w_, :] = resize_img
+            return Image.fromarray(img_.astype(np.uint8)).convert('RGB')
+        return img
+
 if __name__ == '__main__':
     img_name = 'data_aug_test/test.JPEG'
     img = Image.open(img_name)
