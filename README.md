@@ -50,6 +50,7 @@ Robust classification in the presence of polluted images
 
 ## Training
 - run `train.py`
+- using `TRADES` scheme
 
 ## Validation
 - 20k images in testing set are labeled for validation
