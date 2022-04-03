@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter
 import torchvision.transforms as transforms
-from utils import motion_blur, rain_noise, extend
+from utils import motion_blur, rain_noise, extend, local_shuffle
 
 
 class PepperSaltNoise:
@@ -262,10 +262,49 @@ class Extend:
         return img
 
 
+class BlockShuffle:
+    def __init__(self, p=.3):
+        # p : probability of data augmentation
+        self.p = p
+
+    def __call__(self, img):
+        # img : PIL image object
+        if random.uniform(0, 1) < self.p:
+            img = np.array(img)
+            img_ = np.zeros(img.shape)
+            h, w, _ = img_.shape
+            style = np.random.choice([0, 1], size=1)[0]
+            if style == 0:  # split vertical
+                h_split = int(np.random.choice(np.linspace(0.4 * h, 0.6 * h, num=10), size=1)[0])
+                img_[:h - h_split] = img[h_split:]
+                img_[h - h_split:] = img[:h_split]
+            else:  # split horizontal
+                w_split = int(np.random.choice(np.linspace(0.4 * w, 0.6 * w, num=10), size=1)[0])
+                img_[:, :w - w_split, :] = img[:, w_split:, :]
+                img_[:, w - w_split:, :] = img[:, :w_split, :]
+            return Image.fromarray(img_.astype(np.uint8)).convert('RGB')
+        return img
+
+
+class LocalShuffle:
+    def __init__(self, p=.3):
+        # p : probability of data augmentation
+        self.p = p
+        self.scale = int(np.random.choice(np.linspace(80, 100, num=20), size=1)[0])
+
+    def __call__(self, img):
+        # img : PIL image object
+        if random.uniform(0, 1) < self.p:
+            img_ = np.array(img).copy()
+            img_ = local_shuffle(img_, patch_size=(self.scale, self.scale))
+            return Image.fromarray(img_.astype(np.uint8)).convert('RGB')
+        return img
+
+
 if __name__ == '__main__':
     img_name = 'data_aug_test/test.JPEG'
     img = Image.open(img_name)
-    img = PepperSaltNoise(p=1)(img)
+    # img = PepperSaltNoise(p=1)(img)
     # img = ColorPointNoise(p=0.2)(img)
     # img = GaussianNoise(p=0.2)(img)
     # img = Mosaic(p=0.2)(img)
@@ -278,6 +317,7 @@ if __name__ == '__main__':
     # img = GaussianBlur(p=0.01)(img)
     # img = Blur(p=0.05)(img)
     # img = Rain(p=0.2)(img)
+    img = BlockShuffle(p=1)(img)
     plt.imshow(img)
     plt.show()
     # plt.imsave('img.png', np.array(img))

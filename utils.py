@@ -5,6 +5,55 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def local_shuffle(image, patch_size=(80, 80)):
+    imhigh, imwidth, imch = image.shape
+    range_y = np.arange(0, imhigh - patch_size[0], patch_size[0])
+    range_x = np.arange(0, imwidth - patch_size[1], patch_size[1])
+    if range_y[-1] != imhigh - patch_size[0]:
+        range_y = np.append(range_y, imhigh - patch_size[0])
+    if range_x[-1] != imwidth - patch_size[1]:
+        range_x = np.append(range_x, imwidth - patch_size[1])
+    sz = len(range_y) * len(range_x)
+    res = np.zeros((sz, patch_size[0], patch_size[1], imch))
+    index = 0
+    for y in range_y:
+        for x in range_x:
+            patch = image[y:y + patch_size[0], x:x + patch_size[1]]
+            res[index] = patch
+            index = index + 1
+    np.random.shuffle(res)
+
+    idx = 0
+    new_img = np.zeros(image.shape)
+    for y in range_y:
+        for x in range_x:
+            new_img[y:y + patch_size[0], x:x + patch_size[1]] = res[idx]
+            idx += 1
+    return new_img
+
+
+def mixup_data(x, y, alpha=1.0, use_cuda=True):
+    '''Returns mixed inputs, pairs of targets, and lambda'''
+    if alpha > 0:
+        lam = np.random.beta(alpha, alpha)
+    else:
+        lam = 1
+
+    batch_size = x.size()[0]
+    if use_cuda:
+        index = torch.randperm(batch_size).cuda()
+    else:
+        index = torch.randperm(batch_size)
+
+    mixed_x = lam * x + (1 - lam) * x[index, :]
+    y_a, y_b = y, y[index]
+    return mixed_x, y_a, y_b, lam
+
+
+def mixup_criterion(criterion, pred, y_a, y_b, lam):
+    return lam * criterion(pred, y_a) + (1 - lam) * criterion(pred, y_b)
+
+
 def extend(src, offsets=5):
     dst = src.copy()
     rows, cols, _ = src.shape

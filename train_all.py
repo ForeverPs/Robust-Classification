@@ -16,7 +16,7 @@ from adv_gen import fgsm_attack, target_fgsm_attack
 from utils import cutmix, mixup_data, mixup_criterion
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -43,7 +43,7 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
         train_acc, val_acc = 0, 0
 
         model.train()
-        for x, y in tqdm.tqdm(train_loader):
+        for x, y in tqdm.tqdm(all_loader):
             x = x.float().to(device)
             y = y.long().to(device)
 
@@ -100,8 +100,8 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
                 _, predict_cls = torch.max(predict, dim=-1)
                 val_acc += get_acc(predict_cls, y)
 
-        train_loss = train_loss / len(train_loader)
-        train_acc = train_acc / len(train_loader)
+        train_loss = train_loss / len(all_loader)
+        train_acc = train_acc / len(all_loader)
 
         val_loss = val_loss / len(val_loader)
         val_acc = val_acc / len(val_loader)
@@ -123,6 +123,7 @@ def train(epochs, batch_size, transform, lr=1e-3, image_txt='data/train_phase1/l
 
 
 if __name__ == '__main__':
+    # model_path = 'saved_models/energy_ranking_seres18/epoch_2_acc_0.978.pth' 
     model_path = None
     logdir = './tensorboard/SeResNet18/'
     shutil.rmtree(logdir, True)
