@@ -2,13 +2,14 @@ import torch
 from torch import Tensor
 import torch.nn as nn
 from typing import Type, Any, Callable, Union, List, Optional
+from einops import rearrange
 
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
            'wide_resnet50_2', 'wide_resnet101_2']
 
-from model.smooth import SmoothQuantilization
+
 
 
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
@@ -38,7 +39,7 @@ class BasicBlock(nn.Module):
     ) -> None:
         super(BasicBlock, self).__init__()
         if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
+            norm_layer = nn.InstanceNorm2d
         if groups != 1 or base_width != 64:
             raise ValueError('BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
@@ -46,7 +47,7 @@ class BasicBlock(nn.Module):
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.GELU()
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
@@ -94,7 +95,7 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.register_buffer('mean', )
         if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
+            norm_layer = nn.InstanceNorm2d
         width = int(planes * (base_width / 64.)) * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv1x1(inplanes, width)
@@ -103,7 +104,7 @@ class Bottleneck(nn.Module):
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.GELU()
         self.downsample = downsample
         self.stride = stride
 
@@ -131,6 +132,44 @@ class Bottleneck(nn.Module):
         return out
 
 
+def convert2bit(input_n, B, device='cpu'):
+    num_ = input_n.long()
+    exp_bts = torch.arange(0, B).to(device)
+    exp_bts = exp_bts.repeat(input_n.shape + (1,))
+    bits = torch.div(num_.unsqueeze(-1), 2 ** exp_bts, rounding_mode='trunc')
+    bits = bits % 2
+    # bits = bits.to(device)
+    # bits = bits.reshape(bits.shape[0], -1).float().to(device)
+    return bits
+
+
+class Bitflow(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x, b_):
+        ctx.constant = b_
+        scale = 2 ** b_
+        out = torch.round(x * scale - 0.5)
+        out = convert2bit(out, b_, x.device).float()
+        return out
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        b, *_ = grad_output.shape
+        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2) / ctx.constant
+        grad_num = grad_num.reshape([b] + _[:-1])
+        return grad_num, None
+
+
+class BitLayer(nn.Module):
+    def __init__(self, B):
+        super(BitLayer, self).__init__()
+        self.B = B
+
+    def forward(self, x):
+        out = Bitflow.apply(x, self.B)
+        return out
+
+
 class ResNet(nn.Module):
 
     def __init__(
@@ -143,15 +182,16 @@ class ResNet(nn.Module):
         width_per_group: int = 64,
         replace_stride_with_dilation: Optional[List[bool]] = None,
         norm_layer: Optional[Callable[..., nn.Module]] = None,
-        smooth_kernel: int = 8,
     ) -> None:
         super(ResNet, self).__init__()
         if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
+            norm_layer = nn.InstanceNorm2d
         self._norm_layer = norm_layer
-
-        self.smooth = SmoothQuantilization('mean', 3, smooth_kernel, 1, bit=6)
-
+        n_bit = 6
+        # dim = len(mean)
+        # self.register_buffer('mean', torch.FloatTensor(mean).reshape(1, dim, 1, 1))
+        # self.register_buffer('std', torch.FloatTensor(std).reshape(1, dim, 1, 1))
+        self.to_bit = BitLayer(n_bit)
         self.inplanes = 64
         self.dilation = 1
         if replace_stride_with_dilation is None:
@@ -163,10 +203,10 @@ class ResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3 * n_bit, self.inplanes, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = norm_layer(self.inplanes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.GELU()
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2,
@@ -181,7 +221,7 @@ class ResNet(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-            elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
+            elif isinstance(m, (nn.GroupNorm)):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
@@ -222,7 +262,6 @@ class ResNet(nn.Module):
 
     def _forward_impl(self, x: Tensor) -> Tensor:
         # See note [TorchScript super()]
-        x = self.smooth(x)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -241,6 +280,9 @@ class ResNet(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         # x = (x - self.mean) / self.std
+        # in shape [b, c, h, w]
+        x = self.to_bit(x)
+        x = rearrange(x, 'b c h w bit -> b (c bit) h w')
         return self._forward_impl(x)
 
 

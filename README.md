@@ -25,6 +25,9 @@ Robust classification in the presence of polluted images
 - ConventionalBlur
 - Rain
 
+## TODO
+ - fsgm_attack bit resnet_ln
+
 ## Architectures
 - ResNet50 (maybe SeResNet) + Dual Attention + FGSM regularization + (Energy Ranking / Prototype Cluster)
 

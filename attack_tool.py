@@ -4,17 +4,23 @@ from torch.autograd import Variable
 
 def fgsm_attack(model, x, y, epsilon=0.05):
     model.eval()
+    for p in model.parameters():
+        p.requires_grad = False
     x = x.detach()
 
     x.requires_grad_()
     loss_fn = nn.CrossEntropyLoss()
     loss = loss_fn(model(x), y)
     loss.backward()
+    # print(x.requires_grad)
     x_grad = x.grad.data
     x.data += epsilon * torch.sign(x_grad.data)
     x_adv = x.detach()
     x_adv = torch.clip(x_adv, 0, 1)
     x_adv.requires_grad_(False)
+    model.train()
+    for p in model.parameters():
+        p.requires_grad = True
     return x_adv
 
 def pgd_inf_attack(model, x, y, steps=10, step_size=0.002, epsilon=0.05):
@@ -42,6 +48,7 @@ def pgd_inf_attack(model, x, y, steps=10, step_size=0.002, epsilon=0.05):
             x_adv = torch.clip(x_adv, 0, 1)
            
     x_adv.requires_grad_(False).detach()
+    model.train()
     return x_adv
 
 

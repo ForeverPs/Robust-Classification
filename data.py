@@ -44,20 +44,28 @@ class MyDataset(Dataset):
         return self.transform(img), int(label)
 
 
-def data_pipeline(train_image_txt, val_image_text, transform, batch_size):
+def data_pipeline(train_image_txt, val_image_text, transform, batch_size, train_=False):
     # only center crop for validation image
     val_transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
     ])
+    if train_:
+        data_pairs, _ = parse_txt(train_image_txt)
+        # val_pairs, _ = parse_txt(val_image_text)
+        train_set = MyDataset(data_pairs, transform)
+        # val_set = MyDataset(val_pairs, val_transform, path_prefix='data/track1_test1/images/')
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=False, num_workers=16)
+        # val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=16)
+        return train_loader
 
     data_pairs, _ = parse_txt(train_image_txt)
     val_pairs, _ = parse_txt(val_image_text)
     train_set = MyDataset(data_pairs, transform)
     val_set = MyDataset(val_pairs, val_transform, path_prefix='data/track1_test1/images/')
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=8)
-    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=8)
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=16)
+    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=16)
     return train_loader, val_loader
 
 
