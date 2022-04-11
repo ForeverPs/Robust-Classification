@@ -21,6 +21,12 @@ def gaussian_kernel(kernel_size, sigma=1):
     gauss = gauss.unsqueeze(1) * gauss.unsqueeze(0)
     return gauss
 
+def median_kernel(kernel_size):
+    num_size = kernel_size * kernel_size
+    x = torch.eye(num_size, num_size)
+    x = x.reshape(num_size, 1, kernel_size, kernel_size)
+    return x
+
 
 class SmoothFilter(nn.Module):
     def __init__(self, 
@@ -35,6 +41,8 @@ class SmoothFilter(nn.Module):
             w = mean_kernel(kernel_size)
         if filter == 'gauss':
             w = gaussian_kernel(kernel_size, sigma)
+        if filter == 'median':
+            w = median_kernel(kernel_size)
         
         w = w.repeat((in_channel, 1, 1, 1))
         self.register_buffer('w', w)
@@ -42,11 +50,20 @@ class SmoothFilter(nn.Module):
         self.padding = kernel_size // 2
         self.in_channel = in_channel
         self.n_iter = niter
+        self.filter = filter
 
     
     def forward(self, x):
         for _ in range(self.n_iter):
-            x = F.conv2d(x, self.w, padding=self.padding, groups=self.in_channel)
+            if self.filter != 'median':
+                x = F.conv2d(x, self.w, padding=self.padding, groups=self.in_channel)
+            else:
+                shape = x.shape
+                x = x.reshape(shape[0] * shape[1], 1, *shape[2:] )
+                x = F.conv2d(x, self.w.to(x.device), padding=self.padding)
+                x, _ = torch.median(x, dim=1)
+                # print(x)
+                x = x.reshape(shape)
         
         return x
 
@@ -98,7 +115,7 @@ if __name__ == '__main__':
     tensor = transforms.ToTensor()(img).unsqueeze(0)
     print(tensor.shape)
 
-    smooth = SmoothQuantilization('gauss', 3, 5, 10, sigma=5, bit=6)
+    smooth = SmoothQuantilization('median', 3, 5, 10, sigma=5, bit=6)
     tensor = smooth(tensor)
     print(tensor.shape)
     tensor = tensor.squeeze(0)

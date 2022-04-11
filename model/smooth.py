@@ -69,25 +69,6 @@ class Bitflow(torch.autograd.Function):
         return grad_output, None
 
 
-# class Bitflow(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-
-#     def forward(self, x, b_):
-#         scale = 1 / 2 ** b_
-#         out = torch.quantize_per_tensor(
-#                 x, 
-#                 scale=scale, 
-#                 zero_point=0,
-#                 dtype=torch.quint8,
-#             ).dequantize()
-#         out.requires_grad = x.requires_grad
-#         return out
-    
-#     def backward(self, grad_output):
-#         return grad_output
-
-
 class SmoothQuantilization(nn.Module):
     def __init__(
         self, 
@@ -100,12 +81,12 @@ class SmoothQuantilization(nn.Module):
     ):
         super().__init__()
         self.smooth = SmoothFilter(filter, in_channel, kernel_size, niter, sigma)
-        # self.tobit = Bitflow()
+        self.tobit = Bitflow.apply
         self.nbit = bit
     
     def forward(self, x):
         x = self.smooth(x)
-        x = Bitflow.apply(x, self.nbit)
+        x = self.tobit(x, self.nbit)
         return x
 
 
