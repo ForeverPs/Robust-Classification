@@ -1,43 +1,8 @@
-import torch
 import torch.nn as nn
-from model.se_module import SELayer
 from model.resnet import ResNet
-
-
-def convert2bit(input_n, B):
-    num_ = input_n.long()
-    exp_bts = torch.arange(0, B)
-    exp_bts = exp_bts.repeat(input_n.shape + (1,)).cuda()
-    bits = torch.div(num_.unsqueeze(-1), 2 ** exp_bts, rounding_mode='trunc')
-    bits = bits % 2
-    bits = bits.reshape(bits.shape[0], -1).float()
-    return bits
-
-
-class Bitflow(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, x, b_):
-        ctx.constant = b_
-        scale = 2 ** b_
-        out = torch.round(x * scale - 0.5)
-        out = convert2bit(out, b_)
-        return out
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        b, _ = grad_output.shape
-        grad_num = torch.sum(grad_output.reshape(b, -1, ctx.constant), dim=2) / ctx.constant
-        return grad_num, None
-
-
-class BitLayer(nn.Module):
-    def __init__(self, B):
-        super(BitLayer, self).__init__()
-        self.B = B
-
-    def forward(self, x):
-        out = Bitflow.apply(x, self.B)
-        return out
+from model.robust_layer import *
+from model.se_module import SELayer
+from model.ml_decoder import MLDecoder
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -122,141 +87,23 @@ class SEBottleneck(nn.Module):
         return out
 
 
-def se_resnet18(num_classes=1000, mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]):
-    """Constructs a ResNet-18 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes, mean=mean, std=std)
-    model.avgpool = nn.AdaptiveAvgPool2d(1)
-    return model
-
-
-def se_resnet34(num_classes=1000, mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225]):
-    """Constructs a ResNet-34 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes, mean=mean, std=std)
-    model.avgpool = nn.AdaptiveAvgPool2d(1)
-    return model
-
-
-def se_resnet50(num_classes=1000, pretrain_path=None):
-    """Constructs a ResNet-50 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(SEBottleneck, [3, 4, 6, 3], num_classes=num_classes)
-    model.avgpool = nn.AdaptiveAvgPool2d(1)
-    if pretrain_path is not None:
-        model.load_state_dict(torch.load(pretrain_path))
-    else:
-        try:
-            default_path = './pretrained_models/seresnet50-60a8950a85b2b.pkl'
-            weight_dict = torch.load(default_path)  # pretrained weights
-            weight_dict = {k: v for k, v in weight_dict.items() if 'fc' not in k}  # remove classification layer
-            model_dict = model.state_dict()
-            model_dict.update(weight_dict)
-            model.load_state_dict(model_dict)
-            print('Loading Default Weights on ImageNet...')
-        except:
-            print('Training From Scratch...')
-    return model
-
-
-def se_resnet101(num_classes=1000):
-    """Constructs a ResNet-101 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(SEBottleneck, [3, 4, 23, 3], num_classes=num_classes)
-    model.avgpool = nn.AdaptiveAvgPool2d(1)
-    return model
-
-
-def se_resnet152(num_classes=1000):
-    """Constructs a ResNet-152 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(SEBottleneck, [3, 8, 36, 3], num_classes=num_classes)
-    model.avgpool = nn.AdaptiveAvgPool2d(1)
-    return model
-
-
-class SeResNet(nn.Module):
-    def __init__(self, depth, num_classes, dropout=0.2):
-        super(SeResNet, self).__init__()
+class SmoothBitSeResNetML(nn.Module):
+    def __init__(self, depth, num_classes, num_bit=6):
+        super(SmoothBitSeResNetML, self).__init__()
         if depth == 18:
             model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
-            model.avgpool = nn.AdaptiveAvgPool2d(1)
-        else:
+        elif depth == 34:
             model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
-            model.avgpool = nn.AdaptiveAvgPool2d(1)
+        else:  # SeResNet50
+            model = ResNet(SEBottleneck, [3, 4, 6, 3], num_classes=num_classes)
 
         channel_in = model.fc.in_features
-        self.backbone = nn.Sequential(*list(model.children())[:-1])
-
-        self.cls_head = nn.Sequential(
-            self.cls_block(channel_in, 256, dropout),
-            self.cls_block(256, 128, dropout),
-            nn.Linear(128, num_classes))
-
-    def cls_block(self, channel_in, channel_out, p):
-        block = nn.Sequential(
-            nn.Linear(channel_in, channel_out),
-            nn.Dropout(p),
-            nn.LeakyReLU(0.1),
-        )
-        return block
+        self.robust = RobustModule(filter='mean', in_channel=3, kernel_size=5, niter=1, sigma=3., bit=num_bit)
+        self.backbone = nn.Sequential(*list(model.children())[:-2])
+        self.ml_decoder_head = MLDecoder(num_classes, initial_num_features=channel_in)
 
     def forward(self, x):
-        feat = self.backbone(x).view(x.shape[0], -1)
-        cls = self.cls_head(feat)
-        return feat, cls
-
-
-class BitSeResNet(nn.Module):
-    def __init__(self, depth, num_classes, num_bit=2, dropout=0.2):
-        super(BitSeResNet, self).__init__()
-        if depth == 18:
-            model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
-            model.avgpool = nn.AdaptiveAvgPool2d(1)
-        else:
-            model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
-            model.avgpool = nn.AdaptiveAvgPool2d(1)
-
-        channel_in = model.fc.in_features
-        self.backbone = nn.Sequential(*list(model.children())[:-1])
-
-        self.cls_head = nn.Sequential(
-            self.cls_block(channel_in * num_bit, 256, dropout),
-            self.cls_block(256, 128, dropout),
-            nn.Linear(128, num_classes))
-
-        self.sigmoid = nn.Sigmoid()
-        self.bit_layer = BitLayer(num_bit)
-
-    def cls_block(self, channel_in, channel_out, p):
-        block = nn.Sequential(
-            nn.Linear(channel_in, channel_out),
-            nn.Dropout(p),
-            nn.LeakyReLU(0.1),
-        )
-        return block
-
-    def forward(self, x):
-        feat = self.backbone(x).view(x.shape[0], -1)
-        bit_feat = self.bit_layer(self.sigmoid(feat))
-        cls = self.cls_head(bit_feat)
-        return bit_feat, cls
-
-
-if __name__ == '__main__':
-    model = se_resnet50(num_classes=20).eval()
-    x = torch.randn(64, 3, 224, 224)
-    y = model(x)
-    print(y.shape)
+        x = self.robust(x)
+        feat = self.backbone(x)
+        cls = self.ml_decoder_head(feat)
+        return cls

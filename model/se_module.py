@@ -9,6 +9,7 @@ class SELayer(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(channel, channel // reduction, bias=False),
             nn.ReLU(inplace=True),
+            # nn.GELU(),
             nn.Linear(channel // reduction, channel, bias=False),
             nn.Sigmoid()
         )

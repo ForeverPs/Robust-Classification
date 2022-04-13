@@ -59,8 +59,8 @@ def data_pipeline(image_txt, transform, batch_size, val_txt='data/test_label.txt
     train_set = MyDataset(data_pairs, transform)
     val_set = MyDataset(val_pairs, val_transform, path_prefix='')
     all_set = ConcatDataset([train_set, val_set])
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=16)
-    all_loader = DataLoader(all_set, batch_size=batch_size, shuffle=True, num_workers=16)
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=24)
+    all_loader = DataLoader(all_set, batch_size=batch_size, shuffle=True, num_workers=24)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=12)
     return all_loader, train_loader, val_loader
 
@@ -78,5 +78,4 @@ if __name__ == '__main__':
     batch_size = 64
     train_loader, val_loader = data_pipeline(image_txt, transform, batch_size)
     for x, y in tqdm.tqdm(val_loader):
-        # print(x.shape, y.shape, torch.min(x), torch.max(x))
-        pass
+        print(x.shape, y.shape, torch.min(x), torch.max(x))
