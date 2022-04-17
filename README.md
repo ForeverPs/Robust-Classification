@@ -16,7 +16,7 @@ Robust classification in the presence of polluted images
 - train_phase1/label.txt : ground-truth file
 - track1_test1/ : 20000 images for testing
 
-## Data Augmentation Scheme
+## Data Augmentation Scheme（up to 31 kinds）
 `data_aug.py supports the following operations currently:`
 - PepperSaltNoise
 - ColorPointNoise
@@ -39,21 +39,18 @@ Robust classification in the presence of polluted images
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
 ## Architectures
-- SeResNet18 + (Dual Attention) + FGSM regularization(To Do) + Energy Ranking
+- SeResNet18 + ML Decoder + FGSM regularization
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
 
-## To Do
-- group similarity
-
 ## Pretrained Models
-- [Pretrained models](https://drive.google.com/drive/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy?usp=sharing) on the original training set with 1k epochs
+- Training from scratch...
 
 ## Training
 - run `train.py`
-- using `TRADES` scheme
+- using `TRADES` scheme, weight of adversarial regularization equals to 1.
 
 ## Validation
-- 20k images in testing set are labeled for validation
+- test images for validation.
 
 ## Boost Scheme
 - `torch.FiveCrop(224)` introduces no further improvement
