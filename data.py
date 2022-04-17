@@ -65,6 +65,20 @@ def data_pipeline(image_txt, transform, batch_size, val_txt='data/test_label.txt
     return all_loader, train_loader, val_loader
 
 
+def val_data_pipeline(batch_size, val_txt='data/test_label.txt'):
+    # only center crop for validation image
+    val_transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor()
+    ])
+
+    val_pairs = get_val_pairs(val_txt)
+    val_set = MyDataset(val_pairs, val_transform, path_prefix='')
+    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=24)
+    return val_loader
+
+
 if __name__ == '__main__':
     image_txt = 'data/train_phase1/label.txt'
 

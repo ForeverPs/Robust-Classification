@@ -87,9 +87,31 @@ class SEBottleneck(nn.Module):
         return out
 
 
-class SmoothBitSeResNetML(nn.Module):
-    def __init__(self, depth, num_classes, num_bit=6):
-        super(SmoothBitSeResNetML, self).__init__()
+# for black box attack
+# class SmoothBitSeResNetML(nn.Module):
+#     def __init__(self, depth, num_classes, num_bit=6):
+#         super(SmoothBitSeResNetML, self).__init__()
+#         if depth == 18:
+#             model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+#         elif depth == 34:
+#             model = ResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes)
+#         else:  # SeResNet50
+#             model = ResNet(SEBottleneck, [3, 4, 6, 3], num_classes=num_classes)
+
+#         channel_in = model.fc.in_features
+#         self.robust = RobustModule(filter='mean', in_channel=3, kernel_size=3, niter=1, sigma=2., bit=num_bit)
+#         self.backbone = nn.Sequential(*list(model.children())[:-2])
+#         self.ml_decoder_head = MLDecoder(num_classes, initial_num_features=channel_in)
+
+#     def forward(self, x):
+#         x = self.robust(x)
+#         feat = self.backbone(x)
+#         cls = self.ml_decoder_head(feat)
+#         return cls
+
+class ResizedPadSeResNetML(nn.Module):
+    def __init__(self, depth, num_classes, l=218):
+        super(ResizedPadSeResNetML, self).__init__()
         if depth == 18:
             model = ResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes)
         elif depth == 34:
@@ -98,7 +120,7 @@ class SmoothBitSeResNetML(nn.Module):
             model = ResNet(SEBottleneck, [3, 4, 6, 3], num_classes=num_classes)
 
         channel_in = model.fc.in_features
-        self.robust = RobustModule(filter='mean', in_channel=3, kernel_size=5, niter=1, sigma=3., bit=num_bit)
+        self.robust = ResizedPaddingLayer(l)
         self.backbone = nn.Sequential(*list(model.children())[:-2])
         self.ml_decoder_head = MLDecoder(num_classes, initial_num_features=channel_in)
 
