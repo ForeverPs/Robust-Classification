@@ -1,4 +1,5 @@
 import os
+from pickletools import long1
 import tqdm
 import torch
 import shutil
@@ -12,12 +13,48 @@ from utils import cutmix
 from data import data_pipeline
 from torch.utils.tensorboard import SummaryWriter
 import torchvision.transforms as transforms
-# from model.se_resnet import se_resnet50, se_resnet18, se_resnet34
+from model.se_resnet import se_resnet50, se_resnet18, se_resnet34
 from attack_tool import fgsm_attack, pgd_inf_attack
 from torchvision.utils import save_image
-# from model.vit import ViT
-# from model.bit_resnet import resnet18
-from model.resnet import resnet18
+from model.vit import ViT
+from model.bit_resnet import resnet18
+
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
+
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=0, alpha=None, size_average=True):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.alpha = alpha
+        if isinstance(alpha,(float,int)): self.alpha = torch.Tensor([alpha,1-alpha])
+        if isinstance(alpha,list): self.alpha = torch.Tensor(alpha)
+        self.size_average = size_average
+
+    def forward(self, input, target):
+        if input.dim()>2:
+            input = input.view(input.size(0),input.size(1),-1)  # N,C,H,W => N,C,H*W
+            input = input.transpose(1,2)    # N,C,H*W => N,H*W,C
+            input = input.contiguous().view(-1,input.size(2))   # N,H*W,C => N*H*W,C
+        target = target.view(-1,1)
+
+        logpt = F.log_softmax(input, dim=1)
+        logpt = logpt.gather(1,target)
+        logpt = logpt.view(-1)
+        pt = Variable(logpt.data.exp())
+
+        if self.alpha is not None:
+            if self.alpha.type()!=input.data.type():
+                self.alpha = self.alpha.type_as(input.data)
+            at = self.alpha.gather(0,target.data.view(-1))
+            logpt = logpt * Variable(at)
+
+        loss = -1 * (1-pt)**self.gamma * logpt
+        if self.size_average: return loss.mean()
+        else: return loss.sum()
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '2,3'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -39,21 +76,20 @@ def train(
 
     # model = se_resnet18(num_classes=20)
     model = resnet18(num_classes=20)
-    model = model.cuda()
     # model = ViT(image_size=(224, 224), patch_size=(32, 32), num_classes=20, dim=128, depth=3, heads=8, mlp_dim=128)
-    # model = nn.DataParallel(model).to(device)
+    model = nn.DataParallel(model).to(device)
 
     # optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=lr, momentum=.9, weight_decay=1e-4)
     optimizer = optim.Adamax(model.parameters(), lr=lr, weight_decay=1e-3)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         # optimizer, 20 * len(train_loader.dataset) // batch_size, 1e-7)
-    criterion = nn.CrossEntropyLoss()
+    criterion = FocalLoss()
 
     best_acc = 0.8
     for epoch in range(epochs):
-        train_loss, val_loss, attack_loss = 0, 0, 0
-        train_acc, val_acc, attack_acc = 0, 0, 0
+        train_loss, val_loss = 0, 0
+        train_acc, val_acc = 0, 0
 
         model.train()
         save_flag = True
@@ -61,8 +97,8 @@ def train(
             x = x.float().to(device)
             y = y.long().to(device)
             # if random.uniform(0, 1) > cut_mix:
-            predict_natural = model(x)
-            loss = criterion(predict_natural, y)
+            predict_x = model(x)
+            loss = criterion(predict_x, y)
             # else:
             #     x, target_a, target_b, lam = cutmix(x, y)
             #     predict = model(x)
@@ -71,8 +107,8 @@ def train(
             
             # adv train
             # fgsm_x = fgsm_attack(model, x.clone(), y)
-            # predict_atk = model(fgsm_x)
-            # fgsm_loss = criterion(predict_atk, y)
+            # predict = model(fgsm_x)
+            # fgsm_loss = criterion(predict, y)
 
             # if save_flag:
             #     save_flag = False
@@ -82,16 +118,16 @@ def train(
             # predict = model(pgd_x)
             # pgd_loss = criterion(predict, y)
 
-            # loss = loss + 0.05 * fgsm_loss # + 0.1 * pgd_loss
+            loss = loss # + 0.05 * fgsm_loss # + 0.1 * pgd_loss
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             train_loss = train_loss + loss.item()
-# 
-            # _, predict_cls = torch.max(predict_atk, dim=-1)
-            _, predict_natural = torch.max(predict_natural, dim=-1)
-            train_acc += get_acc(predict_natural, y) # * 0.9 + get_acc(predict_cls, y) * 0.1
+
+            # _, predict_cls = torch.max(predict, dim=-1)
+            _, predict_x = torch.max(predict_x, dim=-1)
+            train_acc += get_acc(predict_x, y)
 
             # update learning rate
         scheduler.step()
@@ -103,25 +139,12 @@ def train(
             for x, y in tqdm.tqdm(val_loader):
                 x = x.float().to(device)
                 y = y.long().to(device)
-                predict_white = model(x)
-                loss = criterion(predict_white, y)
+                predict = model(x)
+                loss = criterion(predict, y)
                 val_loss = val_loss + loss.item()
 
-                _, predict_cls = torch.max(predict_white, dim=-1)
+                _, predict_cls = torch.max(predict, dim=-1)
                 val_acc += get_acc(predict_cls, y)
-        
-        if epoch % eval_step == 0:
-            for x, y in tqdm.tqdm(val_loader):
-                x = x.float().to(device)
-                y = y.long().to(device)
-                x = fgsm_attack(model, x,y, 0.05)
-                predict_white = model(x)
-                loss = criterion(predict_white, y)
-                attack_loss = attack_loss + loss.item()
-
-                _, predict_cls = torch.max(predict_white, dim=-1)
-                attack_acc += get_acc(predict_cls, y)
-
 
         train_loss = train_loss / len(train_loader)
         train_acc = train_acc / len(train_loader)
@@ -129,11 +152,8 @@ def train(
         val_loss = val_loss / len(val_loader)
         val_acc = val_acc / len(val_loader)
 
-        attack_loss = attack_loss / len(val_loader)
-        attack_acc = attack_acc / len(val_loader)
-
-        print('EPOCH : %03d | Train Loss : %.3f | Train Acc : %.3f | Val Loss : %.3f | Val Acc : %.3f | Atk Loss : %.3f | Atk Acc : %.3f'
-              % (epoch, train_loss, train_acc, val_loss, val_acc, attack_loss, attack_acc))
+        print('EPOCH : %03d | Train Loss : %.3f | Train Acc : %.3f | Val Loss : %.3f | Val Acc : %.3f'
+              % (epoch, train_loss, train_acc, val_loss, val_acc))
 
         if val_acc >= best_acc:
             best_acc = val_acc
@@ -143,7 +163,6 @@ def train(
 
         writer.add_scalar('train/loss', train_loss, epoch)
         writer.add_scalar('train/acc', train_acc, epoch)
-
         writer.add_scalar('val/loss', val_loss, epoch)
         writer.add_scalar('val/acc', val_acc, epoch)
 
