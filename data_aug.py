@@ -548,15 +548,11 @@ class Frost:
         filename = [resource_filename(__name__, 'frost/frost1.png'),
                     resource_filename(__name__, 'frost/frost2.png'),
                     resource_filename(__name__, 'frost/frost3.png'),
-                    resource_filename(__name__, 'frost/frost4.jpg'),
-                    resource_filename(__name__, 'frost/frost5.jpg'),
-                    resource_filename(__name__, 'frost/frost6.jpg')][idx]
-        frost = cv2.imread(filename)
-        print(frost.shape)
-        # randomly crop and convert to rgb
-        x_start, y_start = np.random.randint(0, frost.shape[0] - 224), np.random.randint(0, frost.shape[1] - 224)
-        frost = frost[x_start:x_start + 224, y_start:y_start + 224][..., [2, 1, 0]]
-
+                    resource_filename(__name__, 'frost/frost4.jpeg'),
+                    resource_filename(__name__, 'frost/frost5.jpeg'),
+                    resource_filename(__name__, 'frost/frost6.jpeg')][idx]
+        h, w, _ = np.array(x).shape
+        frost = np.array(Image.open(filename).convert('RGB').resize((w, h)))
         return np.clip(c[0] * np.array(x) + c[1] * frost, 0, 255)
 
     def __call__(self, img):
@@ -566,6 +562,7 @@ class Frost:
             fog_numpy = self.frost(img, severity)
             return Image.fromarray(fog_numpy.astype(np.uint8)).convert('RGB')
         return img
+ 
 
 
 class Snow:
@@ -865,8 +862,8 @@ if __name__ == '__main__':
     # img = DeFocusBlur(p=1)(img)
     # img = MotionBlur(p=1)(img)
     # img = ZoomBlur(p=1)(img)
-    # img = Frost(p=1)(img)
-    img = Snow(p=1)(img)
+    img = Frost(p=1)(img)
+    # img = Snow(p=1)(img)
     # img = Spatter(p=1)(img)
     # img = Contrast(p=1)(img)
     # img = Brightness(p=1)(img)
@@ -874,9 +871,7 @@ if __name__ == '__main__':
     # img = Compress(p=1)(img)
     # img = Pixelate(p=1)(img)
     # img = Elastic(p=1)(img)
-    plt.imshow(img)
-    plt.show()
-    plt.imsave('data_aug_test/Snow.png', np.array(img))
+    plt.imsave('data_aug_test/Frost.png', np.array(img))
 
 
 
