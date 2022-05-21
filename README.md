@@ -2,7 +2,7 @@
 
 `RobustX: 2nd Solution for CVPR 2022 Robust Classification Challenge`
 
-[![Rank 2](https://img.shields.io/badge/Rank 2-standard-brightgreen.svg?style=flat-square)](https://github.com/ForeverPs/Robust-Classification)
+[![Rank 2](https://img.shields.io/badge/Rank2-standard-brightgreen.svg?style=flat-square)](https://github.com/ForeverPs/Robust-Classification)
 
 <img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/cvpr.png" width="800px"/>
 
