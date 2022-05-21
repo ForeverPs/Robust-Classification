@@ -16,9 +16,10 @@ Official PyTorch Implementation
 > <br/> Institute of Automation, Chinese Academy of Sciences
 
 ## Conclusion
-- training more epochs = better performance, verified on SeResNet18, SeResNet34 and SeResNet50
-- Pretrained models are helpful for improving robustness (Fordidden to use)
-- Add more mlp layers, using `LeakyReLU(0.1)` and `Dropout(0.3)`
+- Backbone does matter, ConvNext is better than SeResNet clearly.
+- Randomization is efficient for defending adversarial attacks.
+- Data augmentation is vital for improving the classification performance, reducing overfitting.
+- Gradient concealment dramatically improves AR metric of CNN-based models in presence of perturbed images.
 
 
 
@@ -50,11 +51,12 @@ Official PyTorch Implementation
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
 ## Architectures
-- SeResNet18 + ML Decoder + FGSM regularization
+- ConvNext(tiny) + FC + FGSM regularization + GCM(Gradient Concealment Module)
+- ConvNext(tiny) + ML Decoder + FGSM regularization + GCM(Gradient Concealment Module)
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
 
 ## Pretrained Models
-- Training from scratch...
+- Training from scratch in a two-stage manner, we provide our checkpoints.
 
 ## Training
 - run `train.py`
