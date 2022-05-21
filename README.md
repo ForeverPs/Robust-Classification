@@ -34,14 +34,11 @@ Official PyTorch Implementation
 - ColorPointNoise
 - GaussianNoise
 - Mosaic in black / gray / white / color
-- RGBShuffle
+- RGBShuffle / ColorJitter
 - Rotate
-- HorizontalFlip
-- VerticalFlip
+- HorizontalFlip / VerticalFlip
 - RandomCut
-- MotionBlur
-- GaussianBlur
-- ConventionalBlur
+- MotionBlur / GaussianBlur / ConventionalBlur
 - Rain / Snow
 - Extend
 - BlockShuffle
