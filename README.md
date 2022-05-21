@@ -2,15 +2,13 @@
 
 `RobustX: 2nd Solution for 2022 CVPR Classification Task Defense`
 
-[Homepage of Classification Task Defense](https://aisafety.sensetime.com/#/competitionDetail?id=3)
-
 <img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/cvpr.png" width="800px"/>
 
 ---
 
 [Paper](https://arxiv.org/abs/2009.14119) |
-[Pretrained models](MODEL_ZOO.md)  |
-[Datasets](Datasets.md)
+[Checkpoints](MODEL_ZOO.md)  |
+[Homepage]([Datasets.md](https://aisafety.sensetime.com/#/competitionDetail?id=3))
 
 Official PyTorch Implementation
 
