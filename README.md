@@ -8,6 +8,15 @@
 
 ---
 
+[Paper](https://arxiv.org/abs/2009.14119) |
+[Pretrained models](MODEL_ZOO.md)  |
+[Datasets](Datasets.md)
+
+Official PyTorch Implementation
+
+> Sen Pei, Jiaxi Sun, Xin Zhang, Qing Li
+> <br/> Institute of Automation, Chinese Academy of Sciences
+
 ## Conclusion
 - training more epochs = better performance, verified on SeResNet18, SeResNet34 and SeResNet50
 - Pretrained models are helpful for improving robustness (Fordidden to use)
