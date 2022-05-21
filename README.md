@@ -56,7 +56,7 @@ Official PyTorch Implementation
 - ConvNext(tiny) + FC + FGSM regularization + GCM(Gradient Concealment Module)
 - ConvNext(tiny) + ML Decoder + FGSM regularization + GCM(Gradient Concealment Module)
 
-![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data/gcm.png)
+<img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/gcm.png" width="500px"/>
 
 ## Pretrained Models
 - Training from scratch in a two-stage manner, we provide our checkpoints.
