@@ -1,6 +1,6 @@
-# RobustX
+# RobustX: 2nd Solution for 2022 CVPR Classification Task Defense
 
-Robust classification in the presence of polluted images 
+[Homepage of Classification Task Defense](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
 ---
 
