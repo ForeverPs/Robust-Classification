@@ -53,8 +53,8 @@ Official PyTorch Implementation
 - Gradient concealment module for hiding the vulnerable direction of classifier's gradient.
 
 ## Architectures
-- ConvNext(tiny) + FC + FGSM regularization + GCM(Gradient Concealment Module)
-- ConvNext(tiny) + ML Decoder + FGSM regularization + GCM(Gradient Concealment Module)
+- ConvNext(tiny) + FC + FGSM regularization + GCM(Gradient Concealment Module) + Randomization
+- ConvNext(tiny) + ML Decoder + FGSM regularization + GCM(Gradient Concealment Module) + Randomization
 
 <img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/gcm.png" width="700px"/>
 
