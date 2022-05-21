@@ -8,7 +8,7 @@
 
 [Paper](https://arxiv.org/abs/2009.14119) |
 [Checkpoints](MODEL_ZOO.md)  |
-[Homepage]([Datasets.md](https://aisafety.sensetime.com/#/competitionDetail?id=3))
+[Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
 Official PyTorch Implementation
 
