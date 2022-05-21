@@ -1,12 +1,12 @@
 # Gradient Concealment: Free Lunch for Defending Adversarial Attacks
 
-`RobustX: 2nd Solution for 2022 CVPR Classification Task Defense`
+`RobustX: 2nd Solution for CVPR 2022 Robust Classification Challenge`
 
 <img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/cvpr.png" width="800px"/>
 
 ---
 
-[Paper](https://arxiv.org/abs/2009.14119) |
+[Paper](https://arxiv.org) |
 [Checkpoints](MODEL_ZOO.md)  |
 [Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
