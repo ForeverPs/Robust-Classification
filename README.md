@@ -66,7 +66,7 @@ Official PyTorch Implementation
 - using `TRADES` scheme, weight of adversarial regularization equals to 1.
 
 
-## Image Pre-processing
+## Image Pre-Processing
 - `transforms.Resize(256)`
 - `transforms.RandomResizedCrop(224)`
 
