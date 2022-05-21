@@ -16,7 +16,7 @@ Official PyTorch Implementation
 > <br/> Institute of Automation, Chinese Academy of Sciences
 
 ## Conclusion
-- Backbone does matter, ConvNext is better than SeResNet clearly.
+- Backbone does matter, ConvNext is better than SeResNet.
 - Randomization is efficient for defending adversarial attacks.
 - Data augmentation is vital for improving the classification performance, reducing overfitting.
 - Gradient concealment dramatically improves AR metric of classifiers in presence of perturbed images.
