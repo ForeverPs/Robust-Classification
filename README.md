@@ -2,7 +2,7 @@
 
 [Homepage of Classification Task Defense](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
-<img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/cvpr.png" width="60px"/>
+<img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/cvpr.png" width="300px"/>
 
 ---
 
