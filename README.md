@@ -19,7 +19,7 @@ Official PyTorch Implementation
 - Backbone does matter, ConvNext is better than SeResNet clearly.
 - Randomization is efficient for defending adversarial attacks.
 - Data augmentation is vital for improving the classification performance, reducing overfitting.
-- Gradient concealment dramatically improves AR metric of CNN-based models in presence of perturbed images.
+- Gradient concealment dramatically improves AR metric of classifiers in presence of perturbed images.
 
 
 
