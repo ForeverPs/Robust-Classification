@@ -28,7 +28,7 @@ Official PyTorch Implementation
 - train_phase1/label.txt : ground-truth file
 - track1_test1/ : 20000 images for testing
 
-## Data Augmentation Scheme（up to 31 kinds）
+## Data Augmentation Schemes
 `data_aug.py supports the following operations currently:`
 - PepperSaltNoise
 - ColorPointNoise
@@ -42,7 +42,7 @@ Official PyTorch Implementation
 - MotionBlur
 - GaussianBlur
 - ConventionalBlur
-- Rain
+- Rain / Snow
 - Extend
 - BlockShuffle
 - LocalShuffle (for learning local spatial feature)
@@ -50,10 +50,16 @@ Official PyTorch Implementation
 
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
+## Adversarial Defense Schemes
+- Adversarial training using fast gradient sign method.
+- Resize and pad the input images for mitigating adversarial effects.
+- Gradient concealment module for hiding the vulnerable direction of classifier's gradient.
+
 ## Architectures
 - ConvNext(tiny) + FC + FGSM regularization + GCM(Gradient Concealment Module)
 - ConvNext(tiny) + ML Decoder + FGSM regularization + GCM(Gradient Concealment Module)
-![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/senet.png)
+
+![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data/gcm.png)
 
 ## Pretrained Models
 - Training from scratch in a two-stage manner, we provide our checkpoints.
@@ -62,11 +68,10 @@ Official PyTorch Implementation
 - run `train.py`
 - using `TRADES` scheme, weight of adversarial regularization equals to 1.
 
-## Validation
-- test images for validation.
 
-## Boost Scheme
-- `torch.FiveCrop(224)` introduces no further improvement
+## Image Pre-processing
+- `transforms.Resize(256)`
+- `transforms.RandomResizedCrop(224)`
 
 ## Reference
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
