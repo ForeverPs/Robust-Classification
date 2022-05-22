@@ -68,9 +68,9 @@ Official PyTorch Implementation
 - The first stage: train ConvNext without `ResizedPaddingLayer`.
 - The second stage: finetune ConvNext with `ResizedPaddingLayer`.
 
-## Training
-- run `train.py`
-- using `TRADES` scheme, weight of adversarial regularization equals to 1.
+## DDP Training
+- `python -m torch.distributed.launch --nproc_per_node=5 train.py  --batch_size 64 --n_gpus=5`
+- If you have more GPUs, you can modify the `nproc_per_node` and `n_gpus` to utilize them.
 
 
 ## Some AR Results on ImageNet
@@ -97,3 +97,16 @@ Official PyTorch Implementation
 - [Mitigating adversarial effects through randomization](https://arxiv.org/abs/1711.01991)(ICLR, 2018)
 - [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/pdf/1905.04899v2.pdf) (ICCV, 2019)
 - [A ConvNet for the 2020s](https://github.com/facebookresearch/ConvNeXt) (CVPR, 2022)
+
+## Citation
+
+```
+@article{Pei2022Grad,
+  title={Gradient Concealment: Free Lunch for Defending Adversarial Attacks},
+  author={Sen Pei, Jiaxi Sun, Xiaopeng Zhang and Gaofeng Meng},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  year={2022},
+  eprint={XXXX.XXXXX},
+}
+```
