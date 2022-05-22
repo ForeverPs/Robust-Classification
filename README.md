@@ -24,7 +24,7 @@ Official PyTorch Implementation
       <a href="#About-the-proposed-Gradient-Concealment-Module">About the proposed Gradient Concealment Module</a>
       <ul>
         <li><a href="#Installation">Installation</a></li>
-        <li><a href="#ighlights-of-Gradient-Concealment-Module">ighlights of Gradient Concealment Module</a></li>
+        <li><a href="#Highlights-of-Gradient-Concealment-Module">Highlights of Gradient Concealment Module</a></li>
         <li><a href="#Some-AR-Results-on-ImageNet">Some AR Results on ImageNet</a></li>
       </ul>
     </li>
