@@ -50,7 +50,7 @@ Official PyTorch Implementation
 ## Image Pre-Processing
 - `transforms.Resize(256)`
 - `transforms.RandomResizedCrop(224)`
-- Data augmentation
+- `Data augmentation schemes`
 
 ## Adversarial Defense Schemes
 - Adversarial training using fast gradient sign method.
