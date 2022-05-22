@@ -62,6 +62,7 @@ Official PyTorch Implementation
 - Download pre-trained models here:
   - [RobustART](https://github.com/DIG-Beihang/RobustART)
   - [RobustBench](https://github.com/RobustBench/robustbench)
+- Values below are AR (Attack Robustness) metric.
 
 | Model | Method | Top 1 Acc | FGSM Linf=8/255 | PGD L1=1600 | PGD L2=8.0 | PGD Linf=8/255 | C&W L2=8.0 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
