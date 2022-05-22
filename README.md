@@ -7,7 +7,7 @@
 ---
 
 [Paper](https://arxiv.org) |
-[Checkpoints]()  |
+[Checkpoints](https://drive.google.com/drive/u/0/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy)  |
 [Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
 Official PyTorch Implementation
@@ -94,7 +94,7 @@ Official PyTorch Implementation
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
 - [Deep Residual Learning for Image Recognition](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf) (CVPR, 2016)
 - [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507) (CVPR, 2018)
-- [Mitigating adversarial effects through randomization](https://arxiv.org/abs/1711.01991)(ICLR, 2018)
+- [Mitigating adversarial effects through randomization](https://arxiv.org/abs/1711.01991) (ICLR, 2018)
 - [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/pdf/1905.04899v2.pdf) (ICCV, 2019)
 - [A ConvNet for the 2020s](https://github.com/facebookresearch/ConvNeXt) (CVPR, 2022)
 
