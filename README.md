@@ -47,6 +47,11 @@ Official PyTorch Implementation
 
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
+## Image Pre-Processing
+- `transforms.Resize(256)`
+- `transforms.RandomResizedCrop(224)`
+- Data augmentation
+
 ## Adversarial Defense Schemes
 - Adversarial training using fast gradient sign method.
 - Resize and pad the input images for mitigating adversarial effects.
@@ -67,10 +72,6 @@ Official PyTorch Implementation
 - run `train.py`
 - using `TRADES` scheme, weight of adversarial regularization equals to 1.
 
-
-## Image Pre-Processing
-- `transforms.Resize(256)`
-- `transforms.RandomResizedCrop(224)`
 
 ## Some AR Results on ImageNet
 
