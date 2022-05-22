@@ -1,117 +1,104 @@
-import os
-import json
 import tqdm
+import json
 import torch
+import numpy as np
 from PIL import Image
-from collections import Counter
+from model.convnext_cls import ConvNextCls
 import torchvision.transforms as transforms
-from model.se_resnet import SmoothBitSeResNetML
 from torch.utils.data import DataLoader, Dataset
+from adv_gen import fgsm_attack, target_fgsm_attack
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+def get_acc(predict, target):
+    predict = predict.detach().cpu().squeeze().numpy()
+    target = target.detach().cpu().squeeze().numpy()
+    acc = np.sum(predict == target) / len(predict)
+    return acc
 
 
-infer_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-])
-
-# Not good, decrease 2%
-# infer_transform = transforms.Compose([
-#     transforms.Resize(256),
-#     transforms.FiveCrop(224),
-#     transforms.Lambda(lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-# ])
+def get_name_label_pairs(json_name):
+    with open(json_name, 'r') as f:
+        jsc = json.load(f)
+    
+    name_label_pair = list()
+    for k, v in jsc.items():
+        label = int(k)
+        images = v
+        for image in images:
+            abs_image_name = '/opt/tiger/debug_server/Phase2/data/train_p2/%s' % image
+            name_label_pair.append((abs_image_name, label))
+    return name_label_pair
 
 
 class MyDataset(Dataset):
-    def __init__(self, names):
+    def __init__(self, names, transform):
         self.names = names
-        self.transform = infer_transform
+        self.transform = transform
 
     def __len__(self):
         return len(self.names)
 
     def __getitem__(self, index):
-        img_name = self.names[index]
+        img_name, label = self.names[index]
         img = Image.open(img_name).convert('RGB')
-        return self.transform(img), img_name
+        return self.transform(img), int(label)
 
 
-def test_pipeline(test_path, batch_size):
-    img_names = ['%s%s' % (test_path, img_name) for img_name in os.listdir(test_path)]
-    test_set = MyDataset(img_names)
-    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=8)
-    return test_loader
+def get_val_loader(val_json, batch_size):
+    # only center crop for validation image
+    val_transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor()
+    ])
+
+    val_pairs = get_name_label_pairs(val_json)
+    val_set = MyDataset(val_pairs, val_transform)
+    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=24)
+    return val_loader
 
 
-def infer(test_path, batch_size):
-    test_loader = test_pipeline(test_path, batch_size)
-
-    img_id = list()
-    result_label = list()
-    with torch.no_grad():
-        for x, name in tqdm.tqdm(test_loader):
-            x = x.float().to(device).reshape(-1, 3, 224, 224)
-            y = model(x)
-            conf, label = torch.max(y, dim=-1)
-            label = label.detach().cpu().numpy().tolist()
-            result_label.extend(label)
-            img_id.extend(list(name))
-
-    # single crop
-    assert len(img_id) == len(result_label)
-    json_list = list()
-    for image_id, category_id in zip(img_id, result_label):
-        img_id = image_id.split('/')[-1].replace('.png', '')
-        json_list.append({'image_id': int(img_id), 'category_id': int(category_id)})
-
-    # five crop: decrease 2%
-    # assert 5 * len(img_id) == len(result_label)
-    # json_list = list()
-    # for i, image_id in enumerate(img_id):
-    #     id = image_id.split('/')[-1].replace('.png', '')
-    #     label = Counter(result_label[i * 5: (i + 1) * 5])
-    #     category_id = label.most_common(1)[0][0]
-    #     json_list.append({'image_id': int(id), 'category_id': int(category_id)})
-
-    # judge difference 
-    # with open('t1_p1_result.json', 'r') as f:
-    #     jsc = json.load(f)
+def validation(batch_size=128):
+    val_loader = get_val_loader(val_json, batch_size=batch_size)
+    val_acc, target_val_acc, untarget_val_acc = 0, 0, 0
     
-    # same, difference = list(), list()
-    # for ele in jsc:
-    #     if ele in json_list:
-    #         same.append(ele)
-    #     else:
-    #         difference.append(ele)
-    # print('Same : %d' % len(same))
-    # print('Different : %d' % len(difference))
+    for x, y in tqdm.tqdm(val_loader):
+        x = x.float().to(device)
+        y = y.long().to(device)
 
-    # with open('confusion.json', 'w') as f:
-    #     json.dump(difference, f)
+        # clean image
+        predict = model(x)
+        _, predict_cls = torch.max(predict, dim=-1)
+        temp_acc = get_acc(predict_cls, y)
+        val_acc += temp_acc
 
-    with open('t1_p1_result.json', 'w') as f:
-        json.dump(json_list, f)
+        # untarget fgsm attack
+        untarget_x = fgsm_attack(model, x, y, epsilon=2/255)
+        untarget_predict = model(untarget_x)
+        _, untarget_predict_cls = torch.max(untarget_predict, dim=-1)
+        temp_untarget_acc = get_acc(untarget_predict_cls, y)
+        untarget_val_acc += temp_untarget_acc
 
-    print('Inference Finished on %d Images.' % len(json_list))
+        # target fgsm attack
+        target_x = target_fgsm_attack(model, x)
+        target_predict = model(target_x)
+        _, target_predict_cls = torch.max(target_predict, dim=-1)
+        temp_target_acc = get_acc(target_predict_cls, y)
+        target_val_acc += temp_target_acc
+        
+    val_acc = val_acc / len(val_loader)
+    untarget_val_acc = untarget_val_acc / len(val_loader)
+    target_val_acc = target_val_acc / len(val_loader)
+    print('Vanilla Acc: %.3f | Untarget Attack Acc: %.3f | Target Attack Acc: %.3f' % (val_acc, untarget_val_acc, target_val_acc))
+
 
 
 if __name__ == '__main__':
-    test_path = 'data/track1_test1/'
-    batch_size = 64
-    model_path = 'saved_models/smooth_bit_bw/epoch_393_acc_1.000.pth'  # online score : 96.64
-    model = SmoothBitSeResNetML(depth=18, num_classes=20, num_bit=6)
-
-    # remove module prefix
-    new_dict = dict()
-    for k, v in torch.load(model_path, map_location='cpu').items():
-        new_dict[k.replace('module.', '')] = v
-    model.load_state_dict(new_dict, strict=True)
-    model = model.to(device).eval()
-    print('Successfully load trained model...')
-    infer(test_path, batch_size)
-
+    val_json = '/opt/tiger/debug_server/Phase2/data/val.json'
+    model = ConvNextCls(num_classes=100)
+    model_path = '/opt/tiger/debug_server/convnext_submit/baseline.pth'
+    model.load_state_dict(torch.load(model_path, map_location='cpu'), strict=True)
+    model = model.eval().to(device)
+    validation(batch_size=64)

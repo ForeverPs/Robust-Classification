@@ -4,7 +4,6 @@ import torch
 import ctypes
 import numpy as np
 import matplotlib.pyplot as plt
-import wand.color as WandColors
 from scipy.ndimage import zoom as scizoom
 from wand.image import Image as WandImage
 from wand.api import library as wandlibrary
@@ -126,7 +125,7 @@ def local_shuffle(image, patch_size=(80, 80)):
     return new_img
 
 
-def mixup_data(x, y, alpha=1.0, use_cuda=True):
+def mixup_data(x, y, alpha=1.0):
     '''Returns mixed inputs, pairs of targets, and lambda'''
     if alpha > 0:
         lam = np.random.beta(alpha, alpha)
@@ -134,10 +133,7 @@ def mixup_data(x, y, alpha=1.0, use_cuda=True):
         lam = 1
 
     batch_size = x.size()[0]
-    if use_cuda:
-        index = torch.randperm(batch_size).cuda()
-    else:
-        index = torch.randperm(batch_size)
+    index = torch.randperm(batch_size).to(x.device)
 
     mixed_x = lam * x + (1 - lam) * x[index, :]
     y_a, y_b = y, y[index]
