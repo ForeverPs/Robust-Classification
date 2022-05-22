@@ -97,3 +97,14 @@ Official PyTorch Implementation
 - [Mitigating adversarial effects through randomization](https://arxiv.org/abs/1711.01991)(ICLR, 2018)
 - [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/pdf/1905.04899v2.pdf) (ICCV, 2019)
 - [A ConvNet for the 2020s](https://github.com/facebookresearch/ConvNeXt) (CVPR, 2022)
+
+## Citation
+
+```
+@inproceedings{liu2021Swin,
+  title={Gradient Concealment: Free Lunch for Defending Adversarial Attacks},
+  author={Sen Pei, Jiaxi Sun, Xiaopeng Zhang and Gaofeng Meng},
+  booktitle={arXiv},
+  year={2022}
+}
+```
