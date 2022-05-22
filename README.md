@@ -101,10 +101,11 @@ Official PyTorch Implementation
 ## Citation
 
 ```
-@inproceedings{liu2021Swin,
+@misc{Pei2022Grad,
   title={Gradient Concealment: Free Lunch for Defending Adversarial Attacks},
   author={Sen Pei, Jiaxi Sun, Xiaopeng Zhang and Gaofeng Meng},
-  booktitle={arXiv},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
   year={2022}
 }
 ```
