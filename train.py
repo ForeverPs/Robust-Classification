@@ -3,8 +3,6 @@ import tqdm
 import torch
 import shutil
 import argparse
-import numpy as np
-from data_aug import *
 from torch import optim
 from eval import get_acc
 from torch import nn, optim
@@ -154,10 +152,10 @@ if __name__ == '__main__':
     parser.add_argument('--build_tensorboard', type=bool, default=True)
     parser.add_argument('--train_json', type=str, default='./data/train.json')
     parser.add_argument('--val_json', type=str, default='./data/val.json')
-    parser.add_argument('--logdir', type=str, default='./tensorboard/Phase2_convnext_tiny_my_pretrain')
+    parser.add_argument('--logdir', type=str, default='./tensorboard/Phase2_convnext_tiny')
     parser.add_argument('--save_path', type=str, default='./saved_models/convnext_tiny')
     parser.add_argument('--best_acc', type=float, default=0.9)
-    parser.add_argument('--model_path', type=str, default='checkponits_path')
+    parser.add_argument('--model_path', type=str, default='./saved_models/checkpoint_epoch_62.pth')
 
     opt = parser.parse_args()
     if opt.local_rank == 0:
