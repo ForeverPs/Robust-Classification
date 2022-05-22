@@ -17,11 +17,14 @@ Official PyTorch Implementation
 
 ---
 ## About the proposed Gradient Concealment Module
+### Installation
+- `pytorch`, no strict version constraint.
+- set `GradientConcealment()` in `model/robust_layer.py` as the top layer of your model in `forward()` function.
 
 ### Highlights of Gradient Concealment Module
-- Parameter-free, training-free, plug-and-play
-- Promising performance in both classification task and adversarial defense
-- Superior generalization across different model architectures, including CNN-based models and attention-based models
+- Parameter-free, training-free, plug-and-play.
+- Promising performance in both classification task and adversarial defense.
+- Superior generalization across different model architectures, including CNN-based models and attention-based models.
 
 ### Some AR Results on ImageNet
 - Download pre-trained models here:
@@ -102,7 +105,7 @@ Official PyTorch Implementation
 - `python -m torch.distributed.launch --nproc_per_node=5 train.py  --batch_size 64 --n_gpus=5`
 - If you have more GPUs, you can modify the `nproc_per_node` and `n_gpus` to utilize them.
 
-
+---
 ## Reference
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
 - [Deep Residual Learning for Image Recognition](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf) (CVPR, 2016)
@@ -111,6 +114,7 @@ Official PyTorch Implementation
 - [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/pdf/1905.04899v2.pdf) (ICCV, 2019)
 - [A ConvNet for the 2020s](https://github.com/facebookresearch/ConvNeXt) (CVPR, 2022)
 
+---
 ## Citation
 
 ```
