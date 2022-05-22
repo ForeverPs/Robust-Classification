@@ -70,20 +70,26 @@ Official PyTorch Implementation
 - `transforms.Resize(256)`
 - `transforms.RandomResizedCrop(224)`
 
-## AR Results on ImageNet
+## Some AR Results on ImageNet
 
 | Backbone | Method | Top 1 Acc | FGSM Linf=8/255 | PGD L1=1600 | PGD L2=8.0 | PGD Linf=8/255 | C&W L2=8.0 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ResNet50 | Vanilla | 77.89 | 31.77 | 46.0 | 41.6 | 48M | 267G |
-| ResNet50 | GCM | 78.57 | 95.18 | 48.5 | 43.3 | 69M | 359G |
-| Swin-T | Cascade Mask R-CNN | ImageNet-1K | 3x | 50.4 | 43.7 | 86M | 745G |
-| Swin-S | Cascade Mask R-CNN | ImageNet-1K |  3x | 51.9 | 45.0 | 107M | 838G |
-| Swin-B | Cascade Mask R-CNN | ImageNet-1K |  3x | 51.9 | 45.0 | 145M | 982G |
-| Swin-T | RepPoints V2 | ImageNet-1K | 3x | 50.0 | - | 45M | 283G |
-| Swin-T | Mask RepPoints V2 | ImageNet-1K | 3x | 50.3 | 43.6 | 47M | 292G |
-| Swin-B | HTC++ | ImageNet-22K | 6x | 56.4 | 49.1 | 160M | 1043G |
-| Swin-L | HTC++ | ImageNet-22K | 3x | 57.1 | 49.5 | 284M | 1470G |
-| Swin-L | HTC++<sup>*</sup> | ImageNet-22K | 3x | 58.0 | 50.4 | 284M | - |
+| ResNet-50 | Vanilla | 77.89 | 31.77 | 0.01 | 0.01 | 0.00 | 0.21 |
+| ResNet-50 | GCM | 78.57 | 95.18 | 94.82 | 94.41 | 97.38 | 95.11 |
+| WideResNet-50 | Vanilla | 78.21 | 20.88 | 0.36 | 0.61 | 0.50 | 0.21 |
+| WideResNet-50 | GCM | 78.08 |  96.06 | 94.46 | 94.51 | 97.69 | 95.66 |
+
+| DenseNet-121 | Vanilla | 74.86 |  16.82 | 51.9 | 45.0 | 145M | 982G |
+| DenseNet-121 | GCM | 74.71 | 3x | 94.98 | - | 45M | 283G |
+
+| EfficientNet-B4 | Vanilla | 71.52 | 1.23 | 50.3 | 43.6 | 47M | 292G |
+| EfficientNet-B4 | GCM | 71.76 | 94.68 |  | 49.1 | 160M | 1043G |
+
+| ViT-B/16 | Vanilla | 79.46 | 15.86 | 57.1 | 49.5 | 284M | 1470G |
+| ViT-B/16 | GCM | 79.47 | 92.24 |  | 50.4 | 284M | - |
+
+| Swin-Transformer-S | Vanilla | 82.93 | 16.93 | 57.1 | 49.5 | 284M | 1470G |
+| Swin-Transformer-S | GCM | 82.79 | 94.38 | 58.0 | 50.4 | 284M | - |
 
 ## Reference
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
