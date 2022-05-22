@@ -72,24 +72,20 @@ Official PyTorch Implementation
 
 ## Some AR Results on ImageNet
 
-| Backbone | Method | Top 1 Acc | FGSM Linf=8/255 | PGD L1=1600 | PGD L2=8.0 | PGD Linf=8/255 | C&W L2=8.0 |
+| Model | Method | Top 1 Acc | FGSM Linf=8/255 | PGD L1=1600 | PGD L2=8.0 | PGD Linf=8/255 | C&W L2=8.0 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | ResNet-50 | Vanilla | 77.89 | 31.77 | 0.01 | 0.01 | 0.00 | 0.21 |
 | ResNet-50 | GCM | 78.57 | 95.18 | 94.82 | 94.41 | 97.38 | 95.11 |
 | WideResNet-50 | Vanilla | 78.21 | 20.88 | 0.36 | 0.61 | 0.50 | 0.21 |
 | WideResNet-50 | GCM | 78.08 |  96.06 | 94.46 | 94.51 | 97.69 | 95.66 |
-
-| DenseNet-121 | Vanilla | 74.86 |  16.82 | 51.9 | 45.0 | 145M | 982G |
-| DenseNet-121 | GCM | 74.71 | 3x | 94.98 | - | 45M | 283G |
-
-| EfficientNet-B4 | Vanilla | 71.52 | 1.23 | 50.3 | 43.6 | 47M | 292G |
-| EfficientNet-B4 | GCM | 71.76 | 94.68 |  | 49.1 | 160M | 1043G |
-
-| ViT-B/16 | Vanilla | 79.46 | 15.86 | 57.1 | 49.5 | 284M | 1470G |
-| ViT-B/16 | GCM | 79.47 | 92.24 |  | 50.4 | 284M | - |
-
-| Swin-Transformer-S | Vanilla | 82.93 | 16.93 | 57.1 | 49.5 | 284M | 1470G |
-| Swin-Transformer-S | GCM | 82.79 | 94.38 | 58.0 | 50.4 | 284M | - |
+| DenseNet-121 | Vanilla | 74.86 |  16.82 | 0.04 | 0.05 | 0.06 | 0.12 |
+| DenseNet-121 | GCM | 74.71 | 94.98 | 94.31 | 94.08 | 97.16 | 95.49 |
+| EfficientNet-B4 | Vanilla | 71.52 | 1.23 | 0.36 | 0.28 | 0.20 | 1.88 |
+| EfficientNet-B4 | GCM | 71.76 | 94.68 | 89.95 | 90.87 | 97.97 | 93.07 |
+| ViT-B/16 | Vanilla | 79.46 | 15.86 | 0.00 | 0.00 | 0.00 | 0.90 |
+| ViT-B/16 | GCM | 79.47 | 92.24 | 94.94 | 95.07 | 98.24 | 93.31 |
+| Swin-Transformer-S | Vanilla | 82.93 | 16.93 | 0.20 | 0.00 | 0.00 | 0.76 |
+| Swin-Transformer-S | GCM | 82.79 | 94.38 | 90.71 | 91.04 | 98.77 | 92.31 |
 
 ## Reference
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
