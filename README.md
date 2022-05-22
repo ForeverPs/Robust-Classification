@@ -15,6 +15,12 @@ Official PyTorch Implementation
 > Sen Pei, Jiaxi Sun, Xin Zhang, Qing Li
 > <br/> Institute of Automation, Chinese Academy of Sciences
 
+
+## Highlights of Gradient Concealment Module
+- Parameter-free, training-free, plug-and-play
+- Promising performance in both classification task and adversarial defense
+- Superior generalization across different model architectures, including CNN-based models and attention-based models
+
 ## Conclusion
 - Backbone does matter, ConvNext is better than SeResNet.
 - Randomization is efficient for defending adversarial attacks.
