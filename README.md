@@ -25,7 +25,7 @@ Official PyTorch Implementation
       <ul>
         <li><a href="#Installation">Installation</a></li>
         <li><a href="#Highlights-of-Gradient-Concealment-Module">Highlights of Gradient Concealment Module</a></li>
-        <li><a href="#Some-AR-Results-on-ImageNet">Some AR Results on ImageNet</a></li>
+        <li><a href="#Some-AR-(Attack Robustness)-Results-on-ImageNet">Some AR (Attack Robustness) Results on ImageNet</a></li>
       </ul>
     </li>
     <li>
@@ -58,7 +58,7 @@ Official PyTorch Implementation
 - Promising performance in both classification task and adversarial defense.
 - Superior generalization across different model architectures, including CNN-based models and attention-based models.
 
-### Some AR Results on ImageNet
+### Some AR (Attack Robustness) Results on ImageNet
 - Download pre-trained models here:
   - [RobustART](https://github.com/DIG-Beihang/RobustART)
   - [RobustBench](https://github.com/RobustBench/robustbench)
