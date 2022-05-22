@@ -29,18 +29,20 @@ Official PyTorch Implementation
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#About-the-CVPR-Robust-Classification-Challenge">About the CVPR Robust Classification Challenge</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#Conclusion">Conclusion</a></li>
+        <li><a href="#Datasets">Datasets</a></li>
+        <li><a href="#Data-Augmentation-Schemes">Data Augmentation Schemes</a></li>
+        <li><a href="#Image-Pre-Processing">Image Pre-Processing</a></li>
+        <li><a href="#Adversarial-Defense-Schemes">Adversarial Defense Schemes</a></li>
+        <li><a href="#Architectures">Architectures</a></li>
+        <li><a href="#Training-Details">Training Details</a></li>
+        <li><a href="#DDP-Training">DDP Training</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#Reference">Reference</a></li>
+    <li><a href="#Citation">Citation</a></li>
   </ol>
 </details>
 
