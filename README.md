@@ -106,7 +106,6 @@ Official PyTorch Implementation
   author={Sen Pei, Jiaxi Sun, Xiaopeng Zhang and Gaofeng Meng},
   archivePrefix={arXiv},
   primaryClass={cs.CV},
-  year={2022},
-  eprint={XXXX.XXXXX},
+  year={2022}
 }
 ```
