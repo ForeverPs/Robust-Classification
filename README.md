@@ -21,7 +21,7 @@ Official PyTorch Implementation
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#About-the-proposed-Gradient-Concealment Module">About the proposed Gradient Concealment Module</a>
+      <a href="#About-the-proposed-Gradient-Concealment-Module">About the proposed Gradient Concealment Module</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
