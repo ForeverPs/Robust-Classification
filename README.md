@@ -58,8 +58,10 @@ Official PyTorch Implementation
 
 <img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/gcm.png" width="700px"/>
 
-## Pretrained Models
+## Training Details
 - Training from scratch in a two-stage manner, we provide our checkpoints.
+- The first stage: train ConvNext without `ResizedPaddingLayer`.
+- The second stage: finetune ConvNext with `ResizedPaddingLayer`.
 
 ## Training
 - run `train.py`
