@@ -68,9 +68,9 @@ Official PyTorch Implementation
 - The first stage: train ConvNext without `ResizedPaddingLayer`.
 - The second stage: finetune ConvNext with `ResizedPaddingLayer`.
 
-## Training
-- run `train.py`
-- using `TRADES` scheme, weight of adversarial regularization equals to 1.
+## DDP Training
+- `python -m torch.distributed.launch --nproc_per_node=5 train.py  --batch_size 64 --n_gpus=5`
+- If you have more GPUs, you can modify the `nproc_per_node` and `n_gpus` to utilize them.
 
 
 ## Some AR Results on ImageNet
