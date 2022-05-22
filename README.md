@@ -15,6 +15,7 @@ Official PyTorch Implementation
 > Sen Pei, Jiaxi Sun, Xin Zhang, Qing Li
 > <br/> Institute of Automation, Chinese Academy of Sciences
 
+---
 ## About the proposed Gradient Concealment Module
 
 ### Highlights of Gradient Concealment Module
@@ -41,6 +42,8 @@ Official PyTorch Implementation
 | ViT-B/16 | GCM | 79.47 | 92.24 | 94.94 | 95.07 | 98.24 | 93.31 |
 | Swin-Transformer-S | Vanilla | 82.93 | 16.93 | 0.20 | 0.00 | 0.00 | 0.76 |
 | Swin-Transformer-S | GCM | 82.79 | 94.38 | 90.71 | 91.04 | 98.77 | 92.31 |
+
+---
 
 ## About the CVPR Robust Classification Challenge
 ### Conclusion
@@ -100,7 +103,7 @@ Official PyTorch Implementation
 - If you have more GPUs, you can modify the `nproc_per_node` and `n_gpus` to utilize them.
 
 
-# Reference
+## Reference
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
 - [Deep Residual Learning for Image Recognition](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf) (CVPR, 2016)
 - [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507) (CVPR, 2018)
@@ -108,7 +111,7 @@ Official PyTorch Implementation
 - [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/pdf/1905.04899v2.pdf) (ICCV, 2019)
 - [A ConvNet for the 2020s](https://github.com/facebookresearch/ConvNeXt) (CVPR, 2022)
 
-# Citation
+## Citation
 
 ```
 @article{Pei2022Grad,
