@@ -15,18 +15,17 @@ Official PyTorch Implementation
 > Sen Pei, Jiaxi Sun, Xin Zhang, Qing Li
 > <br/> Institute of Automation, Chinese Academy of Sciences
 
-# About the proposed Gradient Concealment Module
---
-## Highlights of Gradient Concealment Module
+## About the proposed Gradient Concealment Module
+
+### Highlights of Gradient Concealment Module
 - Parameter-free, training-free, plug-and-play
 - Promising performance in both classification task and adversarial defense
 - Superior generalization across different model architectures, including CNN-based models and attention-based models
 
-## Some AR Results on ImageNet
+### Some AR Results on ImageNet
 - Download pre-trained models here:
   - [RobustART](https://github.com/DIG-Beihang/RobustART)
   - [RobustBench](https://github.com/RobustBench/robustbench)
-
 
 | Model | Method | Top 1 Acc | FGSM Linf=8/255 | PGD L1=1600 | PGD L2=8.0 | PGD Linf=8/255 | C&W L2=8.0 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -43,21 +42,20 @@ Official PyTorch Implementation
 | Swin-Transformer-S | Vanilla | 82.93 | 16.93 | 0.20 | 0.00 | 0.00 | 0.76 |
 | Swin-Transformer-S | GCM | 82.79 | 94.38 | 90.71 | 91.04 | 98.77 | 92.31 |
 
-# About the CVPR Robust Classification Challenge
-## Conclusion
+## About the CVPR Robust Classification Challenge
+### Conclusion
 - Backbone does matter, ConvNext is better than SeResNet.
 - Randomization is efficient for defending adversarial attacks.
 - Data augmentation is vital for improving the classification performance, reducing overfitting.
 - Gradient concealment dramatically improves AR metric of classifiers in presence of perturbed images.
 
-
-## Datasets
+### Datasets
 - train_phase1/images/ : 22987 images for training
 - train_phase1/label.txt : ground-truth file
 - track1_test1/ : 20000 images for testing
 - train_p2 : 127390 images within 100 categories
 
-## Data Augmentation Schemes
+### Data Augmentation Schemes
 `data_aug.py supports the following operations currently:`
 - PepperSaltNoise
 - ColorPointNoise
@@ -76,33 +74,33 @@ Official PyTorch Implementation
 
 ![avatar](https://github.com/ForeverPs/Robust-Classification/blob/main/data_aug_test/demo.png)
 
-## Image Pre-Processing
+### Image Pre-Processing
 - `transforms.Resize(256)`
 - `transforms.RandomResizedCrop(224)`
 - `Data augmentation schemes`
 
-## Adversarial Defense Schemes
+### Adversarial Defense Schemes
 - Adversarial training using fast gradient sign method.
 - Resize and pad the input images for mitigating adversarial effects.
 - Gradient concealment module for hiding the vulnerable direction of classifier's gradient.
 
-## Architectures
+### Architectures
 - ConvNext(tiny) + FC + FGSM regularization + GCM(Gradient Concealment Module) + Randomization
 - ConvNext(tiny) + [ML Decoder](https://github.com/Alibaba-MIIL/ML_Decoder) + FGSM regularization + GCM(Gradient Concealment Module) + Randomization
 
 <img src="https://github.com/ForeverPs/Robust-Classification/blob/main/data/gcm.png" width="700px"/>
 
-## Training Details
+### Training Details
 - Training from scratch in a two-stage manner, we provide our checkpoints.
 - The first stage: train ConvNext without `ResizedPaddingLayer`.
 - The second stage: finetune ConvNext with `ResizedPaddingLayer`.
 
-## DDP Training
+### DDP Training
 - `python -m torch.distributed.launch --nproc_per_node=5 train.py  --batch_size 64 --n_gpus=5`
 - If you have more GPUs, you can modify the `nproc_per_node` and `n_gpus` to utilize them.
 
 
-## Reference
+# Reference
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (NeurIPS, 2014)
 - [Deep Residual Learning for Image Recognition](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf) (CVPR, 2016)
 - [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507) (CVPR, 2018)
@@ -110,7 +108,7 @@ Official PyTorch Implementation
 - [CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features](https://arxiv.org/pdf/1905.04899v2.pdf) (ICCV, 2019)
 - [A ConvNet for the 2020s](https://github.com/facebookresearch/ConvNeXt) (CVPR, 2022)
 
-## Citation
+# Citation
 
 ```
 @article{Pei2022Grad,
