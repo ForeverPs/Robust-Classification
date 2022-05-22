@@ -25,7 +25,7 @@ Official PyTorch Implementation
       <ul>
         <li><a href="#Installation">Installation</a></li>
         <li><a href="#Highlights-of-Gradient-Concealment-Module">Highlights of Gradient Concealment Module</a></li>
-        <li><a href="#Some-AR-(Attack Robustness)-Results-on-ImageNet">Some AR (Attack Robustness) Results on ImageNet</a></li>
+        <li><a href="#Some-AR-(Attack-Robustness)-Results-on-ImageNet">Some AR (Attack Robustness) Results on ImageNet</a></li>
       </ul>
     </li>
     <li>
