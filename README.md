@@ -7,7 +7,7 @@
 ---
 
 [Paper](https://arxiv.org) |
-[Checkpoints](MODEL_ZOO.md)  |
+[Checkpoints]()  |
 [Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
 Official PyTorch Implementation
@@ -22,11 +22,11 @@ Official PyTorch Implementation
 - Gradient concealment dramatically improves AR metric of classifiers in presence of perturbed images.
 
 
-
 ## Datasets
 - train_phase1/images/ : 22987 images for training
 - train_phase1/label.txt : ground-truth file
 - track1_test1/ : 20000 images for testing
+- train_p2 : 127390 images within 100 categories
 
 ## Data Augmentation Schemes
 `data_aug.py supports the following operations currently:`
