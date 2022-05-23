@@ -163,4 +163,4 @@ Official PyTorch Implementation
 ---
 ## Acknowledgement
 - This work is done during the author's internship at [ByteDance](https://www.bytedance.com/en/). 
-- The author would like to thank **`Xiaojie Jin`** and **`Ye Yuan`** for their support in both provided computing resources and vital discussions.
+- The author would like to thank **[Xiaojie Jin](https://scholar.google.com/citations?hl=zh-CN&user=OEZ816YAAAAJ)** and **Ye Yuan** for their support in both provided computing resources and vital discussions.
