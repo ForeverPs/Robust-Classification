@@ -52,7 +52,7 @@ Official PyTorch Implementation
 ## About the proposed Gradient Concealment Module
 ### Installation
 - `pytorch`, no strict version constraint.
-- set `GradientConcealment()` in `model/robust_layer.py` as the top layer of your model in `forward()` function.
+- set `GradientConcealment()` in `model/robust_layer.py` as the top layer of your model in `forward()`.
 
 ### Highlights of Gradient Concealment Module
 - Parameter-free, training-free, plug-and-play.
