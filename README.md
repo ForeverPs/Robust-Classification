@@ -43,6 +43,7 @@ Official PyTorch Implementation
     </li>
     <li><a href="#Reference">Reference</a></li>
     <li><a href="#Citation">Citation</a></li>
+    <li><a href="#Acknowledgement">Acknowledgement</a></li>
   </ol>
 </details>
 
@@ -159,3 +160,6 @@ Official PyTorch Implementation
   year={2022}
 }
 ```
+---
+## Acknowledgement
+- This work is done during the author's internship at ByteDance. I would like to thank Xiaojie Jin and Ye Yuan for their support in both provided computing resources and vital discussions.
