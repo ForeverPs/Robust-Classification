@@ -6,7 +6,7 @@
 
 ---
 
-[Paper](https://arxiv.org) |
+[Paper](https://arxiv.org/abs/2205.10617) |
 [Checkpoints](https://drive.google.com/drive/u/0/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy)  |
 [Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3)
 
