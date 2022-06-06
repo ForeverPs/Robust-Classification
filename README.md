@@ -12,7 +12,7 @@
 
 Official PyTorch Implementation
 
-> Sen Pei, Jiaxi Sun, Xin Zhang, Qing Li
+> Sen Pei, Jiaxi Sun, Xin Zhang, Qing Li, Shuo Li
 > <br/> Institute of Automation, Chinese Academy of Sciences
 ---
 
