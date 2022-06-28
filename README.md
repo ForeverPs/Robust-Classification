@@ -9,7 +9,8 @@
 [Paper](https://arxiv.org/abs/2205.10617) |
 [PPT](https://github.com/ForeverPs/Robust-Classification/blob/main/data/CVPR_Workshop.pptx) |
 [Checkpoints](https://drive.google.com/drive/u/0/folders/1uSrX6fHczmk30ma5IsXobsXHwqhPPWVy)  |
-[Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3)
+[Homepage](https://aisafety.sensetime.com/#/competitionDetail?id=3) |
+[Certificate](https://github.com/ForeverPs/Robust-Classification/blob/main/data/certificate.png)
 
 Official PyTorch Implementation
 
